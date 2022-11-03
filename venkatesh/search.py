@@ -241,7 +241,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
 
     # Initialization
-    import numpy as np
+    # import numpy as np
     from util import PriorityQueue
     fringe = PriorityQueue()  # The open-set
     fringe.push(problem.getStartState(), 0)
