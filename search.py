@@ -195,9 +195,104 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     return action_list
 
+def meetInMiddle(problem, heuristic=nullHeuristic):
+    openForwardQueue = util.PriorityQueue()
+    openBackwardQueue = util.PriorityQueue()
+    openForward = util.Counter()
+    openBackward = util.Counter()
+    closedForward = util.Counter()
+    closedBackward = util.Counter()
+    forwardNodePriorities = util.Counter()
+    backwardNodePriorities = util.Counter()
+    U = float("inf")
+    startNode = problem.getStartState()
+    goalNode = problem.getGoalState() # TODO is this the right function?
+    # push node as pair (node, actionList) TODO how to utilize actionList just adding empty list for now
+    # priority as pair (priority, gCost) because need to break priority ties by lowest gCost.
+    openForwardQueue.push((startNode, []), (0, 0))
+    openBackwardQueue.push((goalNode, []), (0, 0))
+    forwardNodePriorityTuples[startNode] = (0, 0)
+    backwardNodePriorityTuples[goalNode] = (0, 0)
+    epsilon = 0 #TODO how do we get smallest cost edge of the problem?
+
+    while not openForward.isEmpty() and not openBackward.isEmpty():
+        # Pop both forward and backward. We'll add it back below.
+        prMinFNodeTriplet = openForwardQueue.pop()
+        prMinBNodeTriplet = openBackwardQueue.pop()
+        prMinFNode = prMinFNodeTriplet[0]
+        prMinBNode = prMinBNodeTriplet[0]
+        forwardPriorityTuple = forwardNodePriorityTuples[prMinFNode]
+        backwardPriorityTuple = backwardNodePriorityTuples[prMinFNode]
+        forwardG = forwardPriorityTuple[1]
+        backwardG = backwardPriorityTuple[1]
+        fHeuristic = heuristic(prMinFNode, problem)
+        bHeuristic = heuristic(prMinBNode, problem)
+        prMinF = max(forwardG + fHeuristic, 2 * forwardG)
+        prMinB = max(backwardG + bHeuristic, 2 * backwardG)
+        C = min(prMinF, prMinB)
+
+        if U <= max(C, forwardG + fHeuristic, backwardG + bHeuristic, forwardG + backwardG + epsilon):
+            return U
+        
+        if C == prMinF:
+            openForward[prMinFNode] = False
+            closedForward[prMinFNode] = True
+            # Put the backward node back since we went with the forward node
+            openBackwardQueue.push(prMinBNodeTriplet, backwardPriorityTuple)
+            
+            for successor in problem.getSuccessors(prMinFNode):
+                c = successor[0]
+                cost = successor[2]
+                cG = forwardNodePriorityTuples[c][1]
+
+                if (openForward[c] or closedForward[c]) and cG <= (forwardG + cost):
+                    continue
+
+                if openForward[c] or closedForward[c]:
+                    closedForward[c] = False
+
+                cGNew = forwardG + cost
+                openForward[c] = True
+                cF = heuristic(c, problem) + cGNew
+                prC = max(cF, 2 * cGNew)
+                forwardNodePriorityTuples[c] = (prC, cGNew)
+                openForwardQueue.push((c, []), (prC, cGNew))
+
+                if openBackward[c]:
+                    U = min(U, cGNew + backwardNodePriorityTuples[c][1])
+        else:
+            openBackward[prMinBNode] = False
+            closedBackward[prMinBNode] = True
+            # Put the forward node back since we went with the backward node
+            openForwardQueue.push(prMinFNodeTriplet, forwardPriorityTuple)
+
+            for successor in problem.getSuccessors(prMinBNode):
+                c = successor[0]
+                cost = successor[2]
+                cG = backwardNodePriorityTuples[c][1]
+
+                if (openBackward[c] or closedBackward[c]) and cG <= (backwardG + cost):
+                    continue
+
+                if openBackward[c] or closedBackward[c]:
+                    closedBackward[c] = False
+
+                cGNew = backwardG + cost
+                openBackward[c] = True
+                cF = heuristic(c, problem) + cGNew
+                prC = max(cF, 2 * cGNew)
+                backwardNodePriorityTuples[c] = (prC, cGNew)
+                openBackwardQueue.push((c, []), (prC, cGNew))
+
+                if openForward[c]:
+                    U = min(U, cGNew + forwardNodePriorityTuples[c][1])
+
+    return float("inf")
+
 
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
+mm = meetInMiddle
