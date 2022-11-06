@@ -201,10 +201,10 @@ def forwardHeuristic(position, problem):
 def backwardHeuristic(position, problem):
     return abs(position[0] - problem.goal[0]) + abs(position[1] - problem.goal[1])
 
-def meetInMiddle0(problem):
+def meetInMiddle0(problem, heuristic = nullHeuristic):
     return genericMeetInMiddle(problem, False)
 
-def meetInMiddle(problem):
+def meetInMiddle(problem, heuristic = nullHeuristic):
     return genericMeetInMiddle(problem, True)
 
 def genericMeetInMiddle(problem, enableHeuristic):
@@ -309,7 +309,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
             C := min(prminF , prminB)
         """
         C = min(prMinF, prMinB)
-        print(prMinFNode, prMinBNode)
+        # print(prMinFNode, prMinBNode)
 
         """
             if U ≤max(C,fminF,fminB,gminF +gminB +ε)
@@ -317,6 +317,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 return U
         """
         if U <= max(C, forwardG + forwardH, backwardG + backwardH, forwardG + backwardG + epsilon):
+            problem.isGoalState(goalNode) # to plot heat map
             return FINAL_ACTION # need to see how to return actions
 
         """
@@ -340,7 +341,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 if c ∈ OpenF ∪ ClosedF and gF (c) ≤ gF (n) + cost(n, c) then
                     continue
                 if c ∈ OpenF ∪ ClosedF then 
-                    removec from OpenF ∪ ClosedF
+                    remove c from OpenF ∪ ClosedF
                 gF (c) := gF (n) + cost(n, c)
                 add c to OpenF
                 if c ∈ OpenB then
@@ -439,6 +440,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 if c in openForward and openForward[c]:
                     U = min(U, cGNew + forwardNodeMetaData[c][G_VALUE])
                     FINAL_ACTION = forwardNodeMetaData[c][ACTION] + toggleDirectionForActions(backwardNodeMetaData[c][ACTION])
+
     raise Exception("No solution found")
 
 # Abbreviations
