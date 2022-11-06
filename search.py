@@ -439,7 +439,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 if c in openForward and openForward[c]:
                     U = min(U, cGNew + forwardNodeMetaData[c][G_VALUE])
                     FINAL_ACTION = forwardNodeMetaData[c][ACTION] + toggleDirectionForActions(backwardNodeMetaData[c][ACTION])
-    return FINAL_ACTION
+    raise Exception("No solution found")
 
 # Abbreviations
 bfs = breadthFirstSearch
