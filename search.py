@@ -354,13 +354,13 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 newActionList = list(actionF) + [action]
                 cG = float("inf")
 
-                if cG in forwardNodeMetaData:
-                    cG = forwardNodeMetaData[cG][G_VALUE]
+                if c in forwardNodeMetaData:
+                    cG = forwardNodeMetaData[c][G_VALUE]
                 cH = getHValue(c, forwardHeuristic)
 
                 cGNew = forwardG + cost
 
-                if ((c in openForward and openForward[c]) or (c in closedForward and closedForward[c] and cG <= cGNew)):
+                if ((c in openForward and openForward[c]) or (c in closedForward and closedForward[c])) and cG <= cGNew:
                     continue
 
                 if ((c in openForward and openForward[c]) or (c in closedForward and closedForward[c])):
@@ -413,13 +413,13 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 newActionList = list(actionB) + [action]
                 cG = float("inf")
 
-                if cG in backwardNodeMetaData:
-                    cG = backwardNodeMetaData[cG][G_VALUE]
+                if c in backwardNodeMetaData:
+                    cG = backwardNodeMetaData[c][G_VALUE]
                 cH = getHValue(c, backwardHeuristic)
 
                 cGNew = backwardG + cost
 
-                if ((c in openBackward and openBackward[c]) or (c in closedBackward and closedBackward[c] and cG <= cGNew)):
+                if ((c in openBackward and openBackward[c]) or (c in closedBackward and closedBackward[c])) and cG <= cGNew:
                     continue
 
                 if ((c in openBackward and openBackward[c]) or (c in closedBackward and closedBackward[c])):
