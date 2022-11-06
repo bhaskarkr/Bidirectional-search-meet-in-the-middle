@@ -195,100 +195,236 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     return action_list
 
-def meetInMiddle(problem, heuristic=nullHeuristic):
-    openForwardQueue = util.PriorityQueue()
-    openBackwardQueue = util.PriorityQueue()
+def forwardHeuristic(position, problem):
+    return abs(position[0] - problem.startState[0]) + abs(position[1] - problem.startState[1])
+
+def backwardHeuristic(position, problem):
+    return abs(position[0] - problem.goal[0]) + abs(position[1] - problem.goal[1])
+
+def meetInMiddle(problem):
+    DIRECTION = {'North': 'South', 'East': 'West', 'South': 'North', 'West': 'East'}
+
+    def getGValue(actions):
+        return problem.getCostOfActions(actions)
+
+    def getHValue(state, heuristic):
+        return heuristic(state, problem)
+
+    def getFValue(state, actions, heuristic):
+        return getGValue(actions) + getHValue(state, heuristic)
+
+    def toggleDirectionForActions(actions):
+        return [DIRECTION[x] for x in actions][::-1]
+
+
+    """
+        CheckList:
+        ----------
+        gF (start) := 0  - Done
+        gB (goal) := 0   - Done
+        OpenF := {start} - Done
+        OpenB := {goal}  - Done
+        U := ∞
+    """
+    U = float("inf")
+
+    openForwardQueue = util.PriorityQueue() # open set dict{}
+    openBackwardQueue = util.PriorityQueue() # open set dict{}
+
     openForward = util.Counter()
     openBackward = util.Counter()
-    closedForward = util.Counter()
-    closedBackward = util.Counter()
-    forwardNodePriorities = util.Counter()
-    backwardNodePriorities = util.Counter()
-    U = float("inf")
+    closedForward = util.Counter() # closed set{}
+    closedBackward = util.Counter() # closed set{}
+
     startNode = problem.getStartState()
-    goalNode = problem.getGoalState() # TODO is this the right function?
-    # push node as pair (node, actionList) TODO how to utilize actionList just adding empty list for now
-    # priority as pair (priority, gCost) because need to break priority ties by lowest gCost.
-    openForwardQueue.push((startNode, []), (0, 0))
-    openBackwardQueue.push((goalNode, []), (0, 0))
-    forwardNodePriorityTuples[startNode] = (0, 0)
-    backwardNodePriorityTuples[goalNode] = (0, 0)
+    goalNode = problem.getGoalState()
+
+    INITIAL_ACTIONS = []
+
+    G_VALUE = "G_VALUE"
+    H_VALUE = "H_VALUE"
+    PRIORITY_VALUE = "PRIORITY_VALUE"
+    ACTION = "ACTION"
+
+    FINAL_ACTION = []
+
+    forwardNodeMetaData = util.Counter()
+    backwardNodeMetaData = util.Counter()
+
+    closedForward[startNode] = False # initially no action has been taken
+    closedBackward[goalNode] = False # initially no action has been taken
+
+    forwardNodeMetaData[startNode] = {H_VALUE: getHValue(startNode, forwardHeuristic),
+                                      G_VALUE: getGValue(INITIAL_ACTIONS),
+                                      PRIORITY_VALUE: 0,
+                                      ACTION: INITIAL_ACTIONS}
+    openForwardQueue.push(startNode, 0)
+
+    backwardNodeMetaData[goalNode] = {H_VALUE: getHValue(goalNode, backwardHeuristic),
+                                      G_VALUE: getGValue(INITIAL_ACTIONS),
+                                      PRIORITY_VALUE: 0,
+                                      ACTION: INITIAL_ACTIONS}
+    openBackwardQueue.push(goalNode, 0)
+
     epsilon = 0 #TODO how do we get smallest cost edge of the problem?
 
-    while not openForward.isEmpty() and not openBackward.isEmpty():
+    """
+        while (OpenF ̸= ∅) and (OpenB ̸= ∅) do
+    """
+    while not openForwardQueue.isEmpty() and not openBackwardQueue.isEmpty():
         # Pop both forward and backward. We'll add it back below.
         prMinFNodeTriplet = openForwardQueue.pop()
         prMinBNodeTriplet = openBackwardQueue.pop()
-        prMinFNode = prMinFNodeTriplet[0]
-        prMinBNode = prMinBNodeTriplet[0]
-        forwardPriorityTuple = forwardNodePriorityTuples[prMinFNode]
-        backwardPriorityTuple = backwardNodePriorityTuples[prMinFNode]
-        forwardG = forwardPriorityTuple[1]
-        backwardG = backwardPriorityTuple[1]
-        fHeuristic = heuristic(prMinFNode, problem)
-        bHeuristic = heuristic(prMinBNode, problem)
-        prMinF = max(forwardG + fHeuristic, 2 * forwardG)
-        prMinB = max(backwardG + bHeuristic, 2 * backwardG)
+        prMinFNode = prMinFNodeTriplet
+        prMinBNode = prMinBNodeTriplet
+        forwardG = forwardNodeMetaData[prMinFNode][G_VALUE]
+        backwardG = backwardNodeMetaData[prMinBNode][G_VALUE]
+        forwardH = forwardNodeMetaData[prMinFNode][H_VALUE]
+        backwardH = backwardNodeMetaData[prMinBNode][H_VALUE]
+        priorityF = forwardNodeMetaData[prMinFNode][PRIORITY_VALUE]
+        priorityB = backwardNodeMetaData[prMinBNode][PRIORITY_VALUE]
+        actionF = forwardNodeMetaData[prMinFNode][ACTION]
+        actionB = backwardNodeMetaData[prMinBNode][ACTION]
+        """
+            prF (n) = max(fF (n), 2gF (n)).
+        """
+        prMinF = max(forwardG + forwardH, 2 * forwardG)
+        prMinB = max(backwardG + backwardH, 2 * backwardG)
+        """
+            C := min(prminF , prminB)
+        """
         C = min(prMinF, prMinB)
+        print(prMinF, prMinB)
 
-        if U <= max(C, forwardG + fHeuristic, backwardG + bHeuristic, forwardG + backwardG + epsilon):
-            return U
-        
+        """
+            if U ≤max(C,fminF,fminB,gminF +gminB +ε)
+            then
+                return U
+        """
+        if U <= max(C, forwardG + forwardH, backwardG + backwardH, forwardG + backwardG + epsilon):
+            return FINAL_ACTION # need to see how to return actions
+
+        """
+            if C = prminF then
+        """
         if C == prMinF:
+            """
+                Expand in the forward direction
+                choose n ∈ OpenF for which prF (n) = prminF
+                and gF (n) is minimum
+                move n from OpenF to ClosedF
+            """
             openForward[prMinFNode] = False
+            openBackward[prMinBNode] = True
             closedForward[prMinFNode] = True
             # Put the backward node back since we went with the forward node
-            openBackwardQueue.push(prMinBNodeTriplet, backwardPriorityTuple)
-            
+            openBackwardQueue.push(prMinBNode, priorityB)
+
+            """
+                for each child c of n do
+                if c ∈ OpenF ∪ ClosedF and gF (c) ≤ gF (n) + cost(n, c) then
+                    continue
+                if c ∈ OpenF ∪ ClosedF then 
+                    removec from OpenF ∪ ClosedF
+                gF (c) := gF (n) + cost(n, c)
+                add c to OpenF
+                if c ∈ OpenB then
+                    U :=min(U,gF(c)+gB(c))
+            """
+
             for successor in problem.getSuccessors(prMinFNode):
                 c = successor[0]
+                action = successor[1]
                 cost = successor[2]
-                cG = forwardNodePriorityTuples[c][1]
+                newActionList = list(actionF) + [action]
+                cG = float("inf")
 
-                if (openForward[c] or closedForward[c]) and cG <= (forwardG + cost):
+                if cG in closedForward:
+                    cG = forwardNodeMetaData[cG][G_VALUE]
+                cH = getHValue(c, forwardHeuristic)
+
+                cGNew = forwardG + cost
+
+                if (openForward[c] or closedForward[c]) and cG <= cGNew:
                     continue
 
                 if openForward[c] or closedForward[c]:
                     closedForward[c] = False
 
-                cGNew = forwardG + cost
                 openForward[c] = True
-                cF = heuristic(c, problem) + cGNew
+                cF = cH + cGNew
                 prC = max(cF, 2 * cGNew)
-                forwardNodePriorityTuples[c] = (prC, cGNew)
-                openForwardQueue.push((c, []), (prC, cGNew))
+                openForwardQueue.push(c, prC)
+                forwardNodeMetaData[c] = {H_VALUE: cH, G_VALUE: cGNew, PRIORITY_VALUE: prC, ACTION: newActionList}
+
+                """
+                    if c ∈ OpenB then
+                        U :=min(U,gF(c)+gB(c))
+                """
 
                 if openBackward[c]:
-                    U = min(U, cGNew + backwardNodePriorityTuples[c][1])
+                    U = min(U, cGNew + backwardNodeMetaData[c][G_VALUE])
+                    FINAL_ACTION = forwardNodeMetaData[c][ACTION] + toggleDirectionForActions(backwardNodeMetaData[c][ACTION])
         else:
+            """
+                    Analogously for the backward  direction
+            """
+            """
+                Expand in the backward direction
+                choose n ∈ OpenF for which prB (n) = prminB
+                and gB (n) is minimum
+                move n from OpenB to ClosedB
+            """
             openBackward[prMinBNode] = False
+            openForward[prMinFNode] = True
             closedBackward[prMinBNode] = True
-            # Put the forward node back since we went with the backward node
-            openForwardQueue.push(prMinFNodeTriplet, forwardPriorityTuple)
+            # Put the backward node back since we went with the forward node
+            openForwardQueue.push(prMinFNode, priorityF)
+
+            """
+                for each child c of n do
+                if c ∈ OpenB ∪ ClosedB and gB (c) ≤ gB (n) + cost(n, c) then
+                    continue
+                if c ∈ OpenB ∪ ClosedB then 
+                    remove c from OpenB ∪ ClosedB
+                gB (c) := gB (n) + cost(n, c)
+                add c to OpenB
+            """
 
             for successor in problem.getSuccessors(prMinBNode):
                 c = successor[0]
+                action = successor[1]
                 cost = successor[2]
-                cG = backwardNodePriorityTuples[c][1]
+                newActionList = list(actionB) + [action]
+                cG = float("inf")
 
-                if (openBackward[c] or closedBackward[c]) and cG <= (backwardG + cost):
+                if cG in closedBackward:
+                    cG = backwardNodeMetaData[cG][G_VALUE]
+                cH = getHValue(c, backwardHeuristic)
+
+                cGNew = backwardG + cost
+
+                if (openBackward[c] or closedBackward[c]) and cG <= cGNew:
                     continue
 
                 if openBackward[c] or closedBackward[c]:
                     closedBackward[c] = False
 
-                cGNew = backwardG + cost
                 openBackward[c] = True
-                cF = heuristic(c, problem) + cGNew
-                prC = max(cF, 2 * cGNew)
-                backwardNodePriorityTuples[c] = (prC, cGNew)
-                openBackwardQueue.push((c, []), (prC, cGNew))
+                cB = cH + cGNew
+                prC = max(cB, 2 * cGNew)
+                backwardNodeMetaData[c] = {H_VALUE: cH, G_VALUE: cGNew, PRIORITY_VALUE: prC, ACTION: newActionList}
+                openBackwardQueue.push(c, prC)
+
+                """
+                    if c ∈ OpenF then
+                        U :=min(U,gF(c)+gB(c))
+                """
 
                 if openForward[c]:
-                    U = min(U, cGNew + forwardNodePriorityTuples[c][1])
-
-    return float("inf")
-
+                    U = min(U, cGNew + forwardNodeMetaData[c][G_VALUE])
+                    FINAL_ACTION = forwardNodeMetaData[c][ACTION] + toggleDirectionForActions(backwardNodeMetaData[c][ACTION])
+    return FINAL_ACTION
 
 # Abbreviations
 bfs = breadthFirstSearch
