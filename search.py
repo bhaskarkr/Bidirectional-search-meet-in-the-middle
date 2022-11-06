@@ -317,7 +317,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 return U
         """
         if U <= max(C, forwardG + forwardH, backwardG + backwardH, forwardG + backwardG + epsilon):
-            problem.isGoalState(goalNode) # to plot heat map
+            problem.isGoalState(goalNode) # to plot heat map, just calling it with goal node to satisfy the condition
             return FINAL_ACTION # need to see how to return actions
 
         """
