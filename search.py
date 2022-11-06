@@ -208,6 +208,7 @@ def meetInMiddle(problem):
         return problem.getCostOfActions(actions)
 
     def getHValue(state, heuristic):
+        # return 0
         return heuristic(state, problem)
 
     def getFValue(state, actions, heuristic):
@@ -273,10 +274,12 @@ def meetInMiddle(problem):
     """
     while not openForwardQueue.isEmpty() and not openBackwardQueue.isEmpty():
         # Pop both forward and backward. We'll add it back below.
-        prMinFNodeTriplet = openForwardQueue.pop()
-        prMinBNodeTriplet = openBackwardQueue.pop()
-        prMinFNode = prMinFNodeTriplet
-        prMinBNode = prMinBNodeTriplet
+        prMinFNode = openForwardQueue.pop()
+        prMinBNode = openBackwardQueue.pop()
+        closedForward[prMinFNode] = True
+        closedBackward[prMinBNode] = True
+        openForward[prMinFNode] = False
+        openBackward[prMinBNode] = False
         forwardG = forwardNodeMetaData[prMinFNode][G_VALUE]
         backwardG = backwardNodeMetaData[prMinBNode][G_VALUE]
         forwardH = forwardNodeMetaData[prMinFNode][H_VALUE]
@@ -294,7 +297,7 @@ def meetInMiddle(problem):
             C := min(prminF , prminB)
         """
         C = min(prMinF, prMinB)
-        print(prMinF, prMinB)
+        print(prMinFNode, prMinBNode)
 
         """
             if U ≤max(C,fminF,fminB,gminF +gminB +ε)
@@ -339,17 +342,17 @@ def meetInMiddle(problem):
                 newActionList = list(actionF) + [action]
                 cG = float("inf")
 
-                if cG in closedForward:
+                if cG in forwardNodeMetaData:
                     cG = forwardNodeMetaData[cG][G_VALUE]
                 cH = getHValue(c, forwardHeuristic)
 
                 cGNew = forwardG + cost
 
-                if (openForward[c] or closedForward[c]) and cG <= cGNew:
+                if (openForward[c] or closedForward[c]):
                     continue
 
-                if openForward[c] or closedForward[c]:
-                    closedForward[c] = False
+                # if openForward[c] or closedForward[c]:
+                #     closedForward[c] = False
 
                 openForward[c] = True
                 cF = cH + cGNew
@@ -398,17 +401,17 @@ def meetInMiddle(problem):
                 newActionList = list(actionB) + [action]
                 cG = float("inf")
 
-                if cG in closedBackward:
+                if cG in backwardNodeMetaData:
                     cG = backwardNodeMetaData[cG][G_VALUE]
                 cH = getHValue(c, backwardHeuristic)
 
                 cGNew = backwardG + cost
 
-                if (openBackward[c] or closedBackward[c]) and cG <= cGNew:
+                if (openBackward[c] or closedBackward[c]): # and cG <= cGNew
                     continue
 
-                if openBackward[c] or closedBackward[c]:
-                    closedBackward[c] = False
+                # if openBackward[c] or closedBackward[c]:
+                #     closedBackward[c] = False
 
                 openBackward[c] = True
                 cB = cH + cGNew
