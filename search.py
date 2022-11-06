@@ -201,7 +201,13 @@ def forwardHeuristic(position, problem):
 def backwardHeuristic(position, problem):
     return abs(position[0] - problem.goal[0]) + abs(position[1] - problem.goal[1])
 
+def meetInMiddle0(problem):
+    return genericMeetInMiddle(problem, False)
+
 def meetInMiddle(problem):
+    return genericMeetInMiddle(problem, True)
+
+def genericMeetInMiddle(problem, enableHeuristic):
 
     NORTH = 'North'
     SOUTH = 'South'
@@ -215,7 +221,7 @@ def meetInMiddle(problem):
 
     def getHValue(state, heuristic):
         # return 0
-        return heuristic(state, problem)
+        return heuristic(state, problem) if enableHeuristic else 0
 
     def getFValue(state, actions, heuristic):
         return getGValue(actions) + getHValue(state, heuristic)
@@ -238,10 +244,10 @@ def meetInMiddle(problem):
     openForwardQueue = util.PriorityQueue() # open set dict{}
     openBackwardQueue = util.PriorityQueue() # open set dict{}
 
-    openForward = util.Counter()
-    openBackward = util.Counter()
-    closedForward = util.Counter() # closed set{}
-    closedBackward = util.Counter() # closed set{}
+    openForward = {}
+    openBackward = {}
+    closedForward = {} # closed set{}
+    closedBackward = {} # closed set{}
 
     startNode = problem.getStartState()
     goalNode = problem.getGoalState()
@@ -255,8 +261,8 @@ def meetInMiddle(problem):
 
     FINAL_ACTION = []
 
-    forwardNodeMetaData = util.Counter()
-    backwardNodeMetaData = util.Counter()
+    forwardNodeMetaData = {}
+    backwardNodeMetaData = {}
 
     closedForward[startNode] = False # initially no action has been taken
     closedBackward[goalNode] = False # initially no action has been taken
@@ -273,7 +279,7 @@ def meetInMiddle(problem):
                                       ACTION: INITIAL_ACTIONS}
     openBackwardQueue.push(goalNode, 0)
 
-    epsilon = 0 #TODO how do we get smallest cost edge of the problem?
+    epsilon = 1 #TODO how do we get smallest cost edge of the problem? For now lets say 1 is the smallest edge cost
 
     """
         while (OpenF ̸= ∅) and (OpenB ̸= ∅) do
@@ -354,11 +360,11 @@ def meetInMiddle(problem):
 
                 cGNew = forwardG + cost
 
-                if (openForward[c] or closedForward[c]):
+                if ((c in openForward and openForward[c]) or (c in closedForward and closedForward[c] and cG <= cGNew)):
                     continue
 
-                # if openForward[c] or closedForward[c]:
-                #     closedForward[c] = False
+                if ((c in openForward and openForward[c]) or (c in closedForward and closedForward[c])):
+                    closedForward[c] = False
 
                 openForward[c] = True
                 cF = cH + cGNew
@@ -371,7 +377,7 @@ def meetInMiddle(problem):
                         U :=min(U,gF(c)+gB(c))
                 """
 
-                if openBackward[c]:
+                if c in openBackward and openBackward[c]:
                     U = min(U, cGNew + backwardNodeMetaData[c][G_VALUE])
                     FINAL_ACTION = forwardNodeMetaData[c][ACTION] + toggleDirectionForActions(backwardNodeMetaData[c][ACTION])
         else:
@@ -413,15 +419,15 @@ def meetInMiddle(problem):
 
                 cGNew = backwardG + cost
 
-                if (openBackward[c] or closedBackward[c]): # and cG <= cGNew
+                if ((c in openBackward and openBackward[c]) or (c in closedBackward and closedBackward[c] and cG <= cGNew)):
                     continue
 
-                # if openBackward[c] or closedBackward[c]:
-                #     closedBackward[c] = False
+                if ((c in openBackward and openBackward[c]) or (c in closedBackward and closedBackward[c])):
+                    closedBackward[c] = False
 
                 openBackward[c] = True
-                cB = cH + cGNew
-                prC = max(cB, 2 * cGNew)
+                cF = cH + cGNew
+                prC = max(cF, 2 * cGNew)
                 backwardNodeMetaData[c] = {H_VALUE: cH, G_VALUE: cGNew, PRIORITY_VALUE: prC, ACTION: newActionList}
                 openBackwardQueue.push(c, prC)
 
@@ -430,7 +436,7 @@ def meetInMiddle(problem):
                         U :=min(U,gF(c)+gB(c))
                 """
 
-                if openForward[c]:
+                if c in openForward and openForward[c]:
                     U = min(U, cGNew + forwardNodeMetaData[c][G_VALUE])
                     FINAL_ACTION = forwardNodeMetaData[c][ACTION] + toggleDirectionForActions(backwardNodeMetaData[c][ACTION])
     return FINAL_ACTION
@@ -440,4 +446,5 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
+mm0 = meetInMiddle0
 mm = meetInMiddle
