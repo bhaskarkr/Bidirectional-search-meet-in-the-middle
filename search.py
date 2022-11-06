@@ -202,7 +202,13 @@ def backwardHeuristic(position, problem):
     return abs(position[0] - problem.goal[0]) + abs(position[1] - problem.goal[1])
 
 def meetInMiddle(problem):
-    DIRECTION = {'North': 'South', 'East': 'West', 'South': 'North', 'West': 'East'}
+
+    NORTH = 'North'
+    SOUTH = 'South'
+    EAST = 'East'
+    WEST = 'West'
+
+    DIRECTION = {NORTH: SOUTH, EAST: WEST, SOUTH: NORTH, WEST: EAST}
 
     def getGValue(actions):
         return problem.getCostOfActions(actions)
