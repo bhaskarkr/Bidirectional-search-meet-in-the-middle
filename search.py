@@ -195,11 +195,16 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     return action_list
 
-def forwardHeuristic(position, problem):
-    return abs(position[0] - problem.startState[0]) + abs(position[1] - problem.startState[1])
+def forwardHeuristic(position, goal, problem):
+    xy1 = position
+    xy2 = goal
+    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
 
-def backwardHeuristic(position, problem):
-    return abs(position[0] - problem.goal[0]) + abs(position[1] - problem.goal[1])
+def backwardHeuristic(position, goal, problem):
+    xy1 = position
+    xy2 = goal
+    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
+
 
 def meetInMiddle0(problem, heuristic = nullHeuristic):
     return genericMeetInMiddle(problem, False)
@@ -215,20 +220,20 @@ def genericMeetInMiddle(problem, enableHeuristic):
     WEST = 'West'
 
     DIRECTION = {NORTH: SOUTH, EAST: WEST, SOUTH: NORTH, WEST: EAST}
-
     def getGValue(actions):
         return problem.getCostOfActions(actions)
 
-    def getHValue(state, heuristic):
+    def getHValue(state, goal, heuristic):
         # return 0
-        return heuristic(state, problem) if enableHeuristic else 0
+        return heuristic(state, goal, problem) if enableHeuristic else 0
 
     def getFValue(state, actions, heuristic):
-        return getGValue(actions) + getHValue(state, heuristic)
+        return getGValue(actions) + getHValue(state, state, heuristic) # not using
 
     def toggleDirectionForActions(actions):
         return [DIRECTION[x] for x in actions][::-1]
 
+    MIDDLE_NODE = ()
 
     """
         CheckList:
@@ -252,6 +257,9 @@ def genericMeetInMiddle(problem, enableHeuristic):
     startNode = problem.getStartState()
     goalNode = problem.getGoalState()
 
+    lastNodeF = startNode
+    lastNodeB = goalNode
+
     INITIAL_ACTIONS = []
 
     G_VALUE = "G_VALUE"
@@ -267,13 +275,13 @@ def genericMeetInMiddle(problem, enableHeuristic):
     closedForward[startNode] = False # initially no action has been taken
     closedBackward[goalNode] = False # initially no action has been taken
 
-    forwardNodeMetaData[startNode] = {H_VALUE: getHValue(startNode, forwardHeuristic),
+    forwardNodeMetaData[startNode] = {H_VALUE: getHValue(startNode, lastNodeB, forwardHeuristic),
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
                                       ACTION: INITIAL_ACTIONS}
     openForwardQueue.push(startNode, 0)
 
-    backwardNodeMetaData[goalNode] = {H_VALUE: getHValue(goalNode, backwardHeuristic),
+    backwardNodeMetaData[goalNode] = {H_VALUE: getHValue(goalNode, lastNodeF, backwardHeuristic),
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
                                       ACTION: INITIAL_ACTIONS}
@@ -318,6 +326,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
         """
         if U <= max(C, forwardG + forwardH, backwardG + backwardH, forwardG + backwardG + epsilon):
             problem.isGoalState(goalNode) # to plot heat map, just calling it with goal node to satisfy the condition
+            print(MIDDLE_NODE)
             return FINAL_ACTION
 
         """
@@ -330,6 +339,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 and gF (n) is minimum
                 move n from OpenF to ClosedF
             """
+            lastNodeF = prMinFNode
             openForward[prMinFNode] = False
             openBackward[prMinBNode] = True
             closedForward[prMinFNode] = True
@@ -357,7 +367,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
 
                 if c in forwardNodeMetaData:
                     cG = forwardNodeMetaData[c][G_VALUE]
-                cH = getHValue(c, forwardHeuristic)
+                cH = getHValue(c, lastNodeB, forwardHeuristic)
 
                 cGNew = forwardG + cost
 
@@ -380,6 +390,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
 
                 if c in openBackward and openBackward[c]:
                     U = min(U, cGNew + backwardNodeMetaData[c][G_VALUE])
+                    MIDDLE_NODE = (c, cGNew, backwardNodeMetaData[c][G_VALUE])
                     FINAL_ACTION = forwardNodeMetaData[c][ACTION] + toggleDirectionForActions(backwardNodeMetaData[c][ACTION])
         else:
             """
@@ -391,6 +402,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
                 and gB (n) is minimum
                 move n from OpenB to ClosedB
             """
+            lastNodeB = prMinBNode
             openBackward[prMinBNode] = False
             openForward[prMinFNode] = True
             closedBackward[prMinBNode] = True
@@ -416,7 +428,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
 
                 if c in backwardNodeMetaData:
                     cG = backwardNodeMetaData[c][G_VALUE]
-                cH = getHValue(c, backwardHeuristic)
+                cH = getHValue(c, lastNodeF, backwardHeuristic)
 
                 cGNew = backwardG + cost
 
@@ -439,6 +451,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
 
                 if c in openForward and openForward[c]:
                     U = min(U, cGNew + forwardNodeMetaData[c][G_VALUE])
+                    MIDDLE_NODE = (c, forwardNodeMetaData[c][G_VALUE], cGNew)
                     FINAL_ACTION = forwardNodeMetaData[c][ACTION] + toggleDirectionForActions(backwardNodeMetaData[c][ACTION])
 
     raise Exception("No solution found")
