@@ -206,10 +206,10 @@ def backwardHeuristic(position, goal, problem):
     return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
 
 
-def meetInMiddle0(problem, heuristic = nullHeuristic):
+def meetInMiddle0(problem):
     return genericMeetInMiddle(problem, False)
 
-def meetInMiddle(problem, heuristic = nullHeuristic):
+def meetInMiddle(problem):
     return genericMeetInMiddle(problem, True)
 
 def genericMeetInMiddle(problem, enableHeuristic):
