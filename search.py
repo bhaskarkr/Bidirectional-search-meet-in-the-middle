@@ -327,6 +327,9 @@ def genericMeetInMiddle(problem, enableHeuristic):
         if U <= max(C, forwardG + forwardH, backwardG + backwardH, forwardG + backwardG + epsilon):
             problem.isGoalState(goalNode) # to plot heat map, just calling it with goal node to satisfy the condition
             print(MIDDLE_NODE)
+            print("The middle node is: ", MIDDLE_NODE[0])
+            print("The cost to expand from the start node till the middle: ", MIDDLE_NODE[1])
+            print("The cost to expand from the goal node till the middle: ", MIDDLE_NODE[2])
             return FINAL_ACTION
 
         """
