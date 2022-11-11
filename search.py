@@ -275,13 +275,13 @@ def genericMeetInMiddle(problem, enableHeuristic):
     closedForward[startNode] = False # initially no action has been taken
     closedBackward[goalNode] = False # initially no action has been taken
 
-    forwardNodeMetaData[startNode] = {H_VALUE: getHValue(startNode, lastNodeB, forwardHeuristic),
+    forwardNodeMetaData[startNode] = {H_VALUE: getHValue(startNode, goalNode, forwardHeuristic),
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
                                       ACTION: INITIAL_ACTIONS}
     openForwardQueue.push(startNode, 0)
 
-    backwardNodeMetaData[goalNode] = {H_VALUE: getHValue(goalNode, lastNodeF, backwardHeuristic),
+    backwardNodeMetaData[goalNode] = {H_VALUE: getHValue(goalNode, startNode, backwardHeuristic),
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
                                       ACTION: INITIAL_ACTIONS}
@@ -370,7 +370,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
 
                 if c in forwardNodeMetaData:
                     cG = forwardNodeMetaData[c][G_VALUE]
-                cH = getHValue(c, lastNodeB, forwardHeuristic)
+                cH = getHValue(c, goalNode, forwardHeuristic)
 
                 cGNew = forwardG + cost
 
@@ -431,7 +431,7 @@ def genericMeetInMiddle(problem, enableHeuristic):
 
                 if c in backwardNodeMetaData:
                     cG = backwardNodeMetaData[c][G_VALUE]
-                cH = getHValue(c, lastNodeF, backwardHeuristic)
+                cH = getHValue(c, startNode, backwardHeuristic)
 
                 cGNew = backwardG + cost
 
