@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# https://github.com/boppreh/maze/blob/master/maze.py
+# Algorithm for randomization from http://mazeworks.com/mazegen/mazetut/index.htm
 import random
 
 # Easy to read representation for each cardinal direction.
