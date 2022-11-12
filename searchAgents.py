@@ -475,40 +475,32 @@ def mazeDistance(point1, point2, gameState):
 FORWARD = "FORWARD"
 BACKWARD = "BACKWARD"
 
-def forwardHeuristicToGoal(position, goalNode):
-    xy1 = position
-    xy2 = goalNode
-    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
+def euclideanDistance(xy1, xy2):
+    return ((xy1[0] - xy2[0])**2 + (xy1[1] - xy2[1])**2)**0.5
 
-
-def backwardHeuristicToStart(position, startNode):
-    xy1 = position
-    xy2 = startNode
-    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
-
-
-def forwardHeuristicToBackwardLastVisited(position, backwardLastVisited):
-    xy1 = position
-    xy2 = backwardLastVisited
-    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
-
-
-def backwardHeuristicToForwardLastVisited(position, forwardLastVisited):
-    xy1 = position
-    xy2 = forwardLastVisited
-    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
-
-
-def terminalNodeHeuristic(direction, position, terminalNode, lastVisitedNode):
+def terminalNodeEuclideanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
-        return forwardHeuristicToGoal(position, terminalNode)
+        return util.manhattanDistance(position, terminalNode)
     else:
-        return backwardHeuristicToStart(position, terminalNode)
+        return util.manhattanDistance(position, terminalNode)
 
 
-def oppositeDirectionlastVisitedHeuristic(direction, position, targetNode, lastVisitedNode):
+def oppositeDirectionlastVisitedEuclideanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
-        return forwardHeuristicToBackwardLastVisited(position, lastVisitedNode)
+        return util.manhattanDistance(position, lastVisitedNode)
     else:
-        return backwardHeuristicToForwardLastVisited(position, lastVisitedNode)
+        return util.manhattanDistance(position, lastVisitedNode)
+
+def terminalNodeManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):
+    if direction == FORWARD:
+        return util.manhattanDistance(position, terminalNode)
+    else:
+        return util.manhattanDistance(position, terminalNode)
+
+
+def oppositeDirectionlastVisitedManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):
+    if direction == FORWARD:
+        return util.manhattanDistance(position, lastVisitedNode)
+    else:
+        return util.manhattanDistance(position, lastVisitedNode)
 
