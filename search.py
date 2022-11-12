@@ -20,7 +20,6 @@ Pacman agents (in searchAgents.py).
 import util
 
 
-
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -200,7 +199,13 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 FORWARD = "FORWARD"
 BACKWARD = "BACKWARD"
 
+def mmNullHeuristic(direction, state1, state2, state3):
+    return 0
+
 def meetInMiddle(problem, heuristic):
+
+    if not heuristic or heuristic == nullHeuristic:
+        heuristic = mmNullHeuristic
 
     NORTH = 'North'
     SOUTH = 'South'

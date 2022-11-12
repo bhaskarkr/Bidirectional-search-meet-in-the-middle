@@ -475,11 +475,6 @@ def mazeDistance(point1, point2, gameState):
 FORWARD = "FORWARD"
 BACKWARD = "BACKWARD"
 
-
-def mmNullHeuristic(direction, state1, state2, state3):
-    return 0
-
-
 def forwardHeuristicToGoal(position, goalNode):
     xy1 = position
     xy2 = goalNode
