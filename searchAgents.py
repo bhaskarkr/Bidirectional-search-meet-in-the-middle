@@ -480,16 +480,16 @@ def euclideanDistance(xy1, xy2):
 
 def terminalNodeEuclideanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
-        return util.manhattanDistance(position, terminalNode)
+        return euclideanDistance(position, terminalNode)
     else:
-        return util.manhattanDistance(position, terminalNode)
+        return euclideanDistance(position, terminalNode)
 
 
 def oppositeDirectionlastVisitedEuclideanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
-        return util.manhattanDistance(position, lastVisitedNode)
+        return euclideanDistance(position, lastVisitedNode)
     else:
-        return util.manhattanDistance(position, lastVisitedNode)
+        return euclideanDistance(position, lastVisitedNode)
 
 def terminalNodeManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
