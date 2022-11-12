@@ -506,7 +506,7 @@ def terminalNodeHeuristic(direction, position, terminalNode, lastVisitedNode):
         return backwardHeuristicToStart(position, terminalNode)
 
 
-def oppositeDirectionlastVisited(direction, position, targetNode, lastVisitedNode):
+def oppositeDirectionlastVisitedHeuristic(direction, position, targetNode, lastVisitedNode):
     if direction == FORWARD:
         return forwardHeuristicToBackwardLastVisited(position, lastVisitedNode)
     else:
