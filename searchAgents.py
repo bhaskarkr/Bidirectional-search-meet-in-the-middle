@@ -470,3 +470,50 @@ def mazeDistance(point1, point2, gameState):
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
     return len(search.bfs(prob))
+
+
+FORWARD = "FORWARD"
+BACKWARD = "BACKWARD"
+
+
+def mmNullHeuristic(direction, state1, state2, state3):
+    return 0
+
+
+def forwardHeuristicToGoal(position, goalNode):
+    xy1 = position
+    xy2 = goalNode
+    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
+
+
+def backwardHeuristicToStart(position, startNode):
+    xy1 = position
+    xy2 = startNode
+    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
+
+
+def forwardHeuristicToBackwardLastVisited(position, backwardLastVisited):
+    xy1 = position
+    xy2 = backwardLastVisited
+    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
+
+
+def backwardHeuristicToForwardLastVisited(position, forwardLastVisited):
+    xy1 = position
+    xy2 = forwardLastVisited
+    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
+
+
+def terminalNodeHeuristic(direction, position, terminalNode, lastVisitedNode):
+    if direction == FORWARD:
+        return forwardHeuristicToGoal(position, terminalNode)
+    else:
+        return backwardHeuristicToStart(position, terminalNode)
+
+
+def oppositeDirectionlastVisited(direction, position, targetNode, lastVisitedNode):
+    if direction == FORWARD:
+        return forwardHeuristicToBackwardLastVisited(position, lastVisitedNode)
+    else:
+        return backwardHeuristicToForwardLastVisited(position, lastVisitedNode)
+

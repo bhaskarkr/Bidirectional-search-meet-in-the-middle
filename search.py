@@ -19,6 +19,8 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -195,24 +197,10 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     return action_list
 
-def forwardHeuristic(position, goal, problem):
-    xy1 = position
-    xy2 = goal
-    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
+FORWARD = "FORWARD"
+BACKWARD = "BACKWARD"
 
-def backwardHeuristic(position, goal, problem):
-    xy1 = position
-    xy2 = goal
-    return ((xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2) ** 0.5
-
-
-def meetInMiddle0(problem):
-    return genericMeetInMiddle(problem, False)
-
-def meetInMiddle(problem):
-    return genericMeetInMiddle(problem, True)
-
-def genericMeetInMiddle(problem, enableHeuristic):
+def meetInMiddle(problem, heuristic):
 
     NORTH = 'North'
     SOUTH = 'South'
@@ -223,12 +211,8 @@ def genericMeetInMiddle(problem, enableHeuristic):
     def getGValue(actions):
         return problem.getCostOfActions(actions)
 
-    def getHValue(state, goal, heuristic):
-        # return 0
-        return heuristic(state, goal, problem) if enableHeuristic else 0
-
-    def getFValue(state, actions, heuristic):
-        return getGValue(actions) + getHValue(state, state, heuristic) # not using
+    def getHValue(direction, state, goal, lastVisitedNode, heuristic):
+        return heuristic(direction, state, goal, lastVisitedNode)
 
     def toggleDirectionForActions(actions):
         return [DIRECTION[x] for x in actions][::-1]
@@ -275,13 +259,13 @@ def genericMeetInMiddle(problem, enableHeuristic):
     closedForward[startNode] = False # initially no action has been taken
     closedBackward[goalNode] = False # initially no action has been taken
 
-    forwardNodeMetaData[startNode] = {H_VALUE: getHValue(startNode, goalNode, forwardHeuristic),
+    forwardNodeMetaData[startNode] = {H_VALUE: getHValue(FORWARD, startNode, goalNode, lastNodeB, heuristic),
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
                                       ACTION: INITIAL_ACTIONS}
     openForwardQueue.push(startNode, 0)
 
-    backwardNodeMetaData[goalNode] = {H_VALUE: getHValue(goalNode, startNode, backwardHeuristic),
+    backwardNodeMetaData[goalNode] = {H_VALUE: getHValue(BACKWARD, goalNode, startNode, lastNodeF, heuristic),
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
                                       ACTION: INITIAL_ACTIONS}
@@ -370,14 +354,14 @@ def genericMeetInMiddle(problem, enableHeuristic):
 
                 if c in forwardNodeMetaData:
                     cG = forwardNodeMetaData[c][G_VALUE]
-                cH = getHValue(c, goalNode, forwardHeuristic)
+                cH = getHValue(FORWARD, c, goalNode, lastNodeB, heuristic)
 
                 cGNew = forwardG + cost
 
                 if ((c in openForward and openForward[c]) or (c in closedForward and closedForward[c])) and cG <= cGNew:
                     continue
 
-                if ((c in openForward and openForward[c]) or (c in closedForward and closedForward[c])):
+                if (c in openForward and openForward[c]) or (c in closedForward and closedForward[c]):
                     closedForward[c] = False
 
                 openForward[c] = True
@@ -431,14 +415,14 @@ def genericMeetInMiddle(problem, enableHeuristic):
 
                 if c in backwardNodeMetaData:
                     cG = backwardNodeMetaData[c][G_VALUE]
-                cH = getHValue(c, startNode, backwardHeuristic)
+                cH = getHValue(BACKWARD, c, startNode, lastNodeF, heuristic)
 
                 cGNew = backwardG + cost
 
                 if ((c in openBackward and openBackward[c]) or (c in closedBackward and closedBackward[c])) and cG <= cGNew:
                     continue
 
-                if ((c in openBackward and openBackward[c]) or (c in closedBackward and closedBackward[c])):
+                if (c in openBackward and openBackward[c]) or (c in closedBackward and closedBackward[c]):
                     closedBackward[c] = False
 
                 openBackward[c] = True
@@ -464,5 +448,4 @@ bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
 ucs = uniformCostSearch
-mm0 = meetInMiddle0
 mm = meetInMiddle
