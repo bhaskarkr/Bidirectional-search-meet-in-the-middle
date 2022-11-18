@@ -633,6 +633,7 @@ def replayGame( layout, actions, display ):
 def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30, randomtest = 0, randomfinishs = None):
     import __main__
     __main__.__dict__['_display'] = display
+    rules = ClassicGameRules(timeout)
     if randomtest ==0:
         rules = ClassicGameRules(timeout)
         games = []
@@ -670,11 +671,14 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
 
         return games
     elif randomtest == 1:
+        
         pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mm"]
         pacmans =[]
 
         count = 0
         for lay in layout:
+            
+            games = []
             for pacman in pacmanstr:
                 print("Pacman: ", pacman)
                 pacmanType = loadAgent("SearchAgent", False)
@@ -684,10 +688,8 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                     if 'numTraining' not in agentOpts: agentOpts['numTraining'] = numTraining
                 print(pacmanType)
                 pacman = pacmanType(**agentOpts, endpos = (randomfinishs[count][0], randomfinishs[count][1]))
-                pacmans.append(pacman)
-            rules = ClassicGameRules(timeout)
-            games = []
-            for pacman in pacmans:
+                games = []
+                
                 for i in range( numGames ):
                     beQuiet = i < numTraining
                     if beQuiet:
@@ -698,6 +700,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                     else:
                         gameDisplay = display
                         rules.quiet = False
+                    
                     game = rules.newGame( lay, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
                     game.run()
                     if not beQuiet: games.append(game)
@@ -711,7 +714,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                         f.close()
                 
 
-
+                
                 if (numGames-numTraining) > 0:
                     scores = [game.state.getScore() for game in games]
                     wins = [game.state.isWin() for game in games]
@@ -720,7 +723,9 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                     print('Scores:       ', ', '.join([str(score) for score in scores]))
                     print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
                     print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
-                count +=1
+                
+            count +=1    
+                
     return games
 
 
