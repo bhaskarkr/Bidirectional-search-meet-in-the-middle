@@ -10,6 +10,7 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
+import pandas as pd
 
 
 """
@@ -674,12 +675,13 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
         
         pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mm"]
         pacmans =[]
-
+        df = pd.DataFrame(columns = ['layout', 'algo', 'score', 'win', 'expanded'])
         count = 0
         for lay in layout:
             
             games = []
             for pacman in pacmanstr:
+                p = pacman
                 print("Pacman: ", pacman)
                 pacmanType = loadAgent("SearchAgent", False)
                 agentOpts = parseAgentArgs(f"fn={pacman}")
@@ -714,7 +716,13 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                         f.close()
                 
 
-                
+                # save stats for each layout and algo to a csv
+                score = [game.state.getScore() for game in games][0]
+                win = [game.state.isWin() for game in games][0]
+                expanded = pacman._expanded
+                layoutname = lay
+                algo = p
+                df = df.append({'layout': count, 'algo': algo, 'score': score, 'win': win, 'expanded': expanded}, ignore_index=True)
                 if (numGames-numTraining) > 0:
                     scores = [game.state.getScore() for game in games]
                     wins = [game.state.isWin() for game in games]
@@ -725,7 +733,8 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                     print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
                 
             count +=1    
-                
+        df.to_csv('stats.csv', mode='w', header=True)
+    
     return games
 
 
