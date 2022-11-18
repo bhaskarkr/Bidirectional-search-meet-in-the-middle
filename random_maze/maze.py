@@ -143,7 +143,20 @@ class Maze(object):
                 str_matrix[y][x + 1] = ' '
 
         return str_matrix
+    def _get_random_position(self):
+        """
+        Returns a random position on the maze.
+        """
+        return (2*random.randrange(0, self.width),
+                2*random.randrange(0, self.height))
 
+
+    def set_display(self, line, column, text, current_text):
+        lines = current_text.split('\n')
+        x, y = column, line
+        lines[y] = lines[y][:x] + text + lines[y][x + len(text):]
+        return '\n'.join(lines)
+    
     def __repr__(self):
         """
         Returns an Unicode representation of the maze. Size is doubled
