@@ -685,6 +685,8 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                 print("Pacman: ", pacman)
                 pacmanType = loadAgent("SearchAgent", False)
                 agentOpts = parseAgentArgs(f"fn={pacman}")
+                if pacman == "astar":
+                    agentOpts['heuristic'] = 'manhattanHeuristic'
                 if numTraining > 0:
                     args['numTraining'] = numTraining
                     if 'numTraining' not in agentOpts: agentOpts['numTraining'] = numTraining
