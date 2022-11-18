@@ -148,11 +148,11 @@ class Maze(object):
         Returns a random position on the maze.
         """
         if start:
-            return (2*random.randrange(1, self.width//4),
-                    2*random.randrange(1, self.height//4))
+            return (random.randrange(1, 2*self.width//2),
+                    random.randrange(1, 2*self.height//2))
         else:
-            return (2*random.randrange(self.width*3//4, self.width -1),
-                    2*random.randrange(self.width*3//4, self.height-1))
+            return (random.randrange(2*self.width*1//2, 2*self.width -1),
+                    random.randrange(2*self.width*1//2, 2*self.height-1))
 
     def set_display(self, line, column, text, current_text):
         lines = current_text.split('\n')

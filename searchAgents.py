@@ -167,7 +167,7 @@ class PositionSearchProblem(search.SearchProblem):
         self.costFn = costFn
         self.visualize = visualize
         goal = self.goal
-        if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*goal)):
+        if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*(goal))):
             print('Warning: this does not look like a regular search maze')
         # For display purposes
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
