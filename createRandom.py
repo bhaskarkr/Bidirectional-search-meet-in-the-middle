@@ -18,7 +18,7 @@ def main(w= 20, h= 20, n =1):
         (x,y)= a._get_random_position(start=False)
         res = a.set_display(y , x , '.', res)
         # finish x,y in pacman cooridinates:
-        (x,y) = (x,y-a.height)
+        (x,y) = (x,a.height*2-y)
         # To Do: add agent start and end positions
         # save res to lay file
         testfile = open(f"layouts/random/random_{i}_finish({x},{y}).lay","w")

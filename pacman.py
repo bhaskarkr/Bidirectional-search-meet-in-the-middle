@@ -523,6 +523,8 @@ def readCommand( argv ):
                       help='Turns on exception handling and timeouts during games', default=False)
     parser.add_option('--timeout', dest='timeout', type='int',
                       help=default('Maximum length of time an agent can spend computing in a single game'), default=30)
+    parser.add_option('--randomtest', dest='randomtest', type='int',
+                      help=default('testing on randomly generated data on layouts/random. 0 for not testing, 1 for a*, BFS, DFS, mm and mm0'), default=0)
 
     options, otherjunk = parser.parse_args(argv)
     if len(otherjunk) != 0:
@@ -531,10 +533,13 @@ def readCommand( argv ):
 
     # Fix the random seed
     if options.fixRandomSeed: random.seed('cs188')
-
+    args["randomtest"] = options.randomtest
     # Choose a layout
-    args['layout'] = layout.getLayout( options.layout )
-    if args['layout'] == None: raise Exception("The layout " + options.layout + " cannot be found")
+    if options.randomtest == 1:
+        args['layout'], args['randomfinishs'] = layout.getLayout(options.layout, randomtest = options.randomtest)
+    else:
+        args['layout'] = layout.getLayout( options.layout, randomtest = options.randomtest)
+        if args['layout'] == None: raise Exception("The layout " + options.layout + " cannot be found")
 
     # Choose a Pacman agent
     noKeyboard = options.gameToReplay == None and (options.textGraphics or options.quietGraphics)
@@ -625,45 +630,100 @@ def replayGame( layout, actions, display ):
 
     display.finish()
 
-def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30 ):
+def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30, randomtest = 0, randomfinishs = None):
     import __main__
     __main__.__dict__['_display'] = display
+    if randomtest ==0:
+        rules = ClassicGameRules(timeout)
+        games = []
 
-    rules = ClassicGameRules(timeout)
-    games = []
+        for i in range( numGames ):
+            beQuiet = i < numTraining
+            if beQuiet:
+                    # Suppress output and graphics
+                import textDisplay
+                gameDisplay = textDisplay.NullGraphics()
+                rules.quiet = True
+            else:
+                gameDisplay = display
+                rules.quiet = False
+            game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
+            game.run()
+            if not beQuiet: games.append(game)
 
-    for i in range( numGames ):
-        beQuiet = i < numTraining
-        if beQuiet:
-                # Suppress output and graphics
-            import textDisplay
-            gameDisplay = textDisplay.NullGraphics()
-            rules.quiet = True
-        else:
-            gameDisplay = display
-            rules.quiet = False
-        game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
-        game.run()
-        if not beQuiet: games.append(game)
+            if record:
+                import time, pickle
+                fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
+                f = open(fname, 'wb')
+                components = {'layout': layout, 'actions': game.moveHistory}
+                pickle.dump(components, f)
+                f.close()
 
-        if record:
-            import time, pickle
-            fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
-            f = open(fname, 'wb')
-            components = {'layout': layout, 'actions': game.moveHistory}
-            pickle.dump(components, f)
-            f.close()
+        if (numGames-numTraining) > 0:
+            scores = [game.state.getScore() for game in games]
+            wins = [game.state.isWin() for game in games]
+            winRate = wins.count(True)/ float(len(wins))
+            print('Average Score:', sum(scores) / float(len(scores)))
+            print('Scores:       ', ', '.join([str(score) for score in scores]))
+            print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
+            print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
 
-    if (numGames-numTraining) > 0:
-        scores = [game.state.getScore() for game in games]
-        wins = [game.state.isWin() for game in games]
-        winRate = wins.count(True)/ float(len(wins))
-        print('Average Score:', sum(scores) / float(len(scores)))
-        print('Scores:       ', ', '.join([str(score) for score in scores]))
-        print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
-        print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
+        return games
+    elif randomtest == 1:
+        pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mm"]
+        pacmans =[]
 
+        count = 0
+        for lay in layout:
+            for pacman in pacmanstr:
+                print("Pacman: ", pacman)
+                pacmanType = loadAgent("SearchAgent", False)
+                agentOpts = parseAgentArgs(f"fn={pacman}")
+                if numTraining > 0:
+                    args['numTraining'] = numTraining
+                    if 'numTraining' not in agentOpts: agentOpts['numTraining'] = numTraining
+                print(pacmanType)
+                pacman = pacmanType(**agentOpts, endpos = (randomfinishs[count][0], randomfinishs[count][1]))
+                pacmans.append(pacman)
+            rules = ClassicGameRules(timeout)
+            games = []
+            for pacman in pacmans:
+                for i in range( numGames ):
+                    beQuiet = i < numTraining
+                    if beQuiet:
+                            # Suppress output and graphics
+                        import textDisplay
+                        gameDisplay = textDisplay.NullGraphics()
+                        rules.quiet = True
+                    else:
+                        gameDisplay = display
+                        rules.quiet = False
+                    game = rules.newGame( lay, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
+                    game.run()
+                    if not beQuiet: games.append(game)
+
+                    if record:
+                        import time, pickle
+                        fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
+                        f = open(fname, 'wb')
+                        components = {'layout': layout, 'actions': game.moveHistory}
+                        pickle.dump(components, f)
+                        f.close()
+                
+
+
+                if (numGames-numTraining) > 0:
+                    scores = [game.state.getScore() for game in games]
+                    wins = [game.state.isWin() for game in games]
+                    winRate = wins.count(True)/ float(len(wins))
+                    print('Average Score:', sum(scores) / float(len(scores)))
+                    print('Scores:       ', ', '.join([str(score) for score in scores]))
+                    print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
+                    print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
+                count +=1
     return games
+
+
 
 if __name__ == '__main__':
     """

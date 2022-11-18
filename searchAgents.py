@@ -73,10 +73,12 @@ class SearchAgent(Agent):
     Note: You should NOT change any code in SearchAgent
     """
 
-    def __init__(self, fn='depthFirstSearch', prob='PositionSearchProblem', heuristic='nullHeuristic'):
+    def __init__(self, fn='depthFirstSearch', prob='PositionSearchProblem', heuristic='nullHeuristic',endpos =None):
         # Warning: some advanced Python magic is employed below to find the right functions and problems
 
         # Get the search function from the name and heuristic
+        self.endpos = endpos
+        print(self.endpos)
         if fn not in dir(search):
             raise AttributeError(fn + ' is not a search function in search.py.')
         func = getattr(search, fn)
@@ -111,7 +113,7 @@ class SearchAgent(Agent):
         """
         if self.searchFunction == None: raise Exception("No search function provided for SearchAgent")
         starttime = time.time()
-        problem = self.searchType(state) # Makes a new search problem
+        problem = self.searchType(state, goal = self.endpos) # Makes a new search problem
         self.actions  = self.searchFunction(problem) # Find a path
         totalCost = problem.getCostOfActions(self.actions)
         print('Path found with total cost of %d in %.1f seconds' % (totalCost, time.time() - starttime))
@@ -152,15 +154,20 @@ class PositionSearchProblem(search.SearchProblem):
         costFn: A function from a search state (tuple) to a non-negative number
         goal: A position in the gameState
         """
+        
+        
         self.walls = gameState.getWalls()
         self.startState = gameState.getPacmanPosition()
         if start != None: self.startState = start
         self.goal = goal
+        if self.goal == None:
+            self.goal = (1,1)
+        print("goal is",self.goal)
         self.costFn = costFn
         self.visualize = visualize
+        goal = self.goal
         if warn and (gameState.getNumFood() != 1 or not gameState.hasFood(*goal)):
             print('Warning: this does not look like a regular search maze')
-
         # For display purposes
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
 
