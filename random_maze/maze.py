@@ -126,7 +126,7 @@ class Maze(object):
         O     O   O
         OOOOOOOOOOO
         """
-        str_matrix = [['#'] * (self.width * 2 + 1)
+        str_matrix = [['%'] * (self.width * 2 + 1)
                       for i in range(self.height * 2 + 1)]
 
         for cell in self.cells:
