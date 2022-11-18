@@ -11,16 +11,17 @@ def main(w= 20, h= 20, n =1):
             res += "".join(row)
             res += "\n"
         # starting pos
-        (x,y) = a._get_random_position()
+        (x,y) = a._get_random_position(start=True)
         res = a.set_display(y , x , 'P', res)
 
         #ending pos
-        (x,y)= (1,2*a.height)
+        (x,y)= a._get_random_position(start=False)
         res = a.set_display(y , x , '.', res)
-
+        # finish x,y in pacman cooridinates:
+        (x,y) = (x,y-a.height)
         # To Do: add agent start and end positions
         # save res to lay file
-        testfile = open(f"layouts/random_{i}.lay","w")
+        testfile = open(f"layouts/random/random_{i}_finish({x},{y}).lay","w")
         testfile.write(res)
 
 if __name__ == "__main__":

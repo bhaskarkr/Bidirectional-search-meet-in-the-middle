@@ -143,13 +143,16 @@ class Maze(object):
                 str_matrix[y][x + 1] = ' '
 
         return str_matrix
-    def _get_random_position(self):
+    def _get_random_position(self,start=True):
         """
         Returns a random position on the maze.
         """
-        return (2*random.randrange(0, self.width),
-                2*random.randrange(0, self.height))
-
+        if start:
+            return (2*random.randrange(0, self.width//4),
+                    2*random.randrange(0, self.height//4))
+        else:
+            return (2*random.randrange(self.width*3//4, self.width),
+                    2*random.randrange(self.width*3//4, self.height))
 
     def set_display(self, line, column, text, current_text):
         lines = current_text.split('\n')
