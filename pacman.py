@@ -673,7 +673,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
         return games
     elif randomtest == 1:
         
-        pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mm"]
+        pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mmEuclidean", "mmManhattan","mmOppositeDirectionManhattan"]
         pacmans =[]
         df = pd.DataFrame(columns = ['layout', 'algo', 'score', 'win', 'expanded'])
         count = 0
@@ -684,9 +684,33 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                 p = pacman
                 print("Pacman: ", pacman)
                 pacmanType = loadAgent("SearchAgent", False)
-                agentOpts = parseAgentArgs(f"fn={pacman}")
+                #agentOpts = parseAgentArgs(f"fn={pacman}")
                 if pacman == "astar":
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
                     agentOpts['heuristic'] = 'manhattanHeuristic'
+                elif pacman == "mm0":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'mmNullHeuristic'
+                    
+                elif pacman == "mmEuclidean":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'terminalNodeEuclideanHeuristic'
+                    
+                elif pacman == "mmManhattan":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'terminalNodeManhattanHeuristic'
+                    
+                elif pacman == "mmOppositeDirectionManhattan":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'oppositeDirectionlastVisitedManhattanHeuristic'
+                else:
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    
+                
                 if numTraining > 0:
                     args['numTraining'] = numTraining
                     if 'numTraining' not in agentOpts: agentOpts['numTraining'] = numTraining
