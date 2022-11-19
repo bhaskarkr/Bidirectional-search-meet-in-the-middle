@@ -478,3 +478,37 @@ def mazeDistance(point1, point2, gameState):
     assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
     prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
     return len(search.bfs(prob))
+
+
+FORWARD = "FORWARD"
+BACKWARD = "BACKWARD"
+
+def euclideanDistance(xy1, xy2):
+    return ((xy1[0] - xy2[0])**2 + (xy1[1] - xy2[1])**2)**0.5
+
+def terminalNodeEuclideanHeuristic(direction, position, terminalNode, lastVisitedNode):
+    if direction == FORWARD:
+        return euclideanDistance(position, terminalNode)
+    else:
+        return euclideanDistance(position, terminalNode)
+
+
+def oppositeDirectionlastVisitedEuclideanHeuristic(direction, position, terminalNode, lastVisitedNode):
+    if direction == FORWARD:
+        return euclideanDistance(position, lastVisitedNode)
+    else:
+        return euclideanDistance(position, lastVisitedNode)
+
+def terminalNodeManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):
+    if direction == FORWARD:
+        return util.manhattanDistance(position, terminalNode)
+    else:
+        return util.manhattanDistance(position, terminalNode)
+
+
+def oppositeDirectionlastVisitedManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):
+    if direction == FORWARD:
+        return util.manhattanDistance(position, lastVisitedNode)
+    else:
+        return util.manhattanDistance(position, lastVisitedNode)
+
