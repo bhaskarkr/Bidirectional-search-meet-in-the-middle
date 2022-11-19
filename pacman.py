@@ -526,12 +526,13 @@ def readCommand( argv ):
                       help=default('Maximum length of time an agent can spend computing in a single game'), default=30)
     parser.add_option('--randomtest', dest='randomtest', type='int',
                       help=default('testing on randomly generated data on layouts/random. 0 for not testing, 1 for a*, BFS, DFS, mm and mm0'), default=0)
-
+    # custom csv file name
+    parser.add_option('--csv', dest='csv', help=default('csv file name'), default='stats')
     options, otherjunk = parser.parse_args(argv)
     if len(otherjunk) != 0:
         raise Exception('Command line input not understood: ' + str(otherjunk))
     args = dict()
-
+    args["csv"] = options.csv
     # Fix the random seed
     if options.fixRandomSeed: random.seed('cs188')
     args["randomtest"] = options.randomtest
@@ -631,7 +632,7 @@ def replayGame( layout, actions, display ):
 
     display.finish()
 
-def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30, randomtest = 0, randomfinishs = None):
+def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30, randomtest = 0, randomfinishs = None,csv = 'stats'):
     import __main__
     __main__.__dict__['_display'] = display
     rules = ClassicGameRules(timeout)
@@ -759,7 +760,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                     print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
                 
             count +=1    
-        df.to_csv('stats.csv', mode='w', header=True)
+        df.to_csv(f'{csv}.csv', mode='w', header=True)
     
     return games
 
