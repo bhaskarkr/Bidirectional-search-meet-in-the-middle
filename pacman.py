@@ -11,6 +11,7 @@
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 import pandas as pd
+from ANOVA import ANOVATest
 
 
 """
@@ -675,11 +676,16 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     elif randomtest == 1:
         
         pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mmEuclidean", "mmManhattan","mmOppositeDirectionManhattan"]
-        pacmans =[]
+        pacmans = []
         df = pd.DataFrame(columns = ['layout', 'algo', 'score', 'win', 'expanded'])
         count = 0
+        results_map = {}
+        anova_test = ANOVATest()
+
+        for pacman in pacmanstr:
+            results_map[pacman] = []
+
         for lay in layout:
-            
             games = []
             for pacman in pacmanstr:
                 p = pacman
@@ -747,6 +753,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                 score = [game.state.getScore() for game in games][0]
                 win = [game.state.isWin() for game in games][0]
                 expanded = pacman._expanded
+                results_map[p].append(pacman._expanded)
                 layoutname = lay
                 algo = p
                 df = df.append({'layout': count, 'algo': algo, 'score': score, 'win': win, 'expanded': expanded}, ignore_index=True)
@@ -761,6 +768,19 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                 
             count +=1    
         df.to_csv(f'{csv}.csv', mode='w', header=True)
+        df_test = pd.DataFrame(columns = ['algo_1', 'algo_1_expanded', 'algo_2', 'algo_2_expanded', 'F_score', 'p_value'])
+
+        for i in range(len(pacmanstr) - 1):
+            for j in range(i + 1, len(pacmanstr)):
+                algo_1 = pacmanstr[i]
+                algo_2 = pacmanstr[j]
+                algo_1_expanded = results_map[algo_1]
+                algo_2_expanded = results_map[algo_2]
+                F_score, p_value = anova_test.conduct_test(algo_1_expanded, algo_2_expanded)
+                df_test = df_test.append({'algo_1': algo_1, 'algo_1_expanded': algo_1_expanded, 'algo_2': algo_2, 'algo_2_expanded': algo_2_expanded, 'F_score': F_score, 'p_value': p_value}, ignore_index=True)
+
+        df_test.to_csv(f'ANOVA_results.csv', mode='w', header=True)
+
     
     return games
 
