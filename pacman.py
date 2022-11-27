@@ -10,6 +10,8 @@
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
+import pandas as pd
+from ANOVA import ANOVATest
 
 
 """
@@ -523,18 +525,24 @@ def readCommand( argv ):
                       help='Turns on exception handling and timeouts during games', default=False)
     parser.add_option('--timeout', dest='timeout', type='int',
                       help=default('Maximum length of time an agent can spend computing in a single game'), default=30)
-
+    parser.add_option('--randomtest', dest='randomtest', type='int',
+                      help=default('testing on randomly generated data on layouts/random. 0 for not testing, 1 for a*, BFS, DFS, mm and mm0'), default=0)
+    # custom csv file name
+    parser.add_option('--csv', dest='csv', help=default('csv file name'), default='stats')
     options, otherjunk = parser.parse_args(argv)
     if len(otherjunk) != 0:
         raise Exception('Command line input not understood: ' + str(otherjunk))
     args = dict()
-
+    args["csv"] = options.csv
     # Fix the random seed
     if options.fixRandomSeed: random.seed('cs188')
-
+    args["randomtest"] = options.randomtest
     # Choose a layout
-    args['layout'] = layout.getLayout( options.layout )
-    if args['layout'] == None: raise Exception("The layout " + options.layout + " cannot be found")
+    if options.randomtest == 1:
+        args['layout'], args['randomfinishs'] = layout.getLayout(options.layout, randomtest = options.randomtest)
+    else:
+        args['layout'] = layout.getLayout( options.layout, randomtest = options.randomtest)
+        if args['layout'] == None: raise Exception("The layout " + options.layout + " cannot be found")
 
     # Choose a Pacman agent
     noKeyboard = options.gameToReplay == None and (options.textGraphics or options.quietGraphics)
@@ -625,45 +633,158 @@ def replayGame( layout, actions, display ):
 
     display.finish()
 
-def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30 ):
+def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30, randomtest = 0, randomfinishs = None,csv = 'stats'):
     import __main__
     __main__.__dict__['_display'] = display
-
     rules = ClassicGameRules(timeout)
-    games = []
+    if randomtest ==0:
+        rules = ClassicGameRules(timeout)
+        games = []
 
-    for i in range( numGames ):
-        beQuiet = i < numTraining
-        if beQuiet:
-                # Suppress output and graphics
-            import textDisplay
-            gameDisplay = textDisplay.NullGraphics()
-            rules.quiet = True
-        else:
-            gameDisplay = display
-            rules.quiet = False
-        game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
-        game.run()
-        if not beQuiet: games.append(game)
+        for i in range( numGames ):
+            beQuiet = i < numTraining
+            if beQuiet:
+                    # Suppress output and graphics
+                import textDisplay
+                gameDisplay = textDisplay.NullGraphics()
+                rules.quiet = True
+            else:
+                gameDisplay = display
+                rules.quiet = False
+            game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
+            game.run()
+            if not beQuiet: games.append(game)
 
-        if record:
-            import time, pickle
-            fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
-            f = open(fname, 'wb')
-            components = {'layout': layout, 'actions': game.moveHistory}
-            pickle.dump(components, f)
-            f.close()
+            if record:
+                import time, pickle
+                fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
+                f = open(fname, 'wb')
+                components = {'layout': layout, 'actions': game.moveHistory}
+                pickle.dump(components, f)
+                f.close()
 
-    if (numGames-numTraining) > 0:
-        scores = [game.state.getScore() for game in games]
-        wins = [game.state.isWin() for game in games]
-        winRate = wins.count(True)/ float(len(wins))
-        print('Average Score:', sum(scores) / float(len(scores)))
-        print('Scores:       ', ', '.join([str(score) for score in scores]))
-        print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
-        print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
+        if (numGames-numTraining) > 0:
+            scores = [game.state.getScore() for game in games]
+            wins = [game.state.isWin() for game in games]
+            winRate = wins.count(True)/ float(len(wins))
+            print('Average Score:', sum(scores) / float(len(scores)))
+            print('Scores:       ', ', '.join([str(score) for score in scores]))
+            print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
+            print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
 
+        return games
+    elif randomtest == 1:
+        
+        pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mmEuclidean", "mmManhattan","mmOppositeDirectionManhattan"]
+        pacmans = []
+        df = pd.DataFrame(columns = ['layout', 'algo', 'score', 'win', 'expanded'])
+        count = 0
+        results_map = {}
+        anova_test = ANOVATest()
+
+        for pacman in pacmanstr:
+            results_map[pacman] = []
+
+        for lay in layout:
+            games = []
+            for pacman in pacmanstr:
+                p = pacman
+                print("Pacman: ", pacman)
+                pacmanType = loadAgent("SearchAgent", False)
+                #agentOpts = parseAgentArgs(f"fn={pacman}")
+                if pacman == "astar":
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'manhattanHeuristic'
+                elif pacman == "mm0":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'mmNullHeuristic'
+                    
+                elif pacman == "mmEuclidean":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'terminalNodeEuclideanHeuristic'
+                    
+                elif pacman == "mmManhattan":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'terminalNodeManhattanHeuristic'
+                    
+                elif pacman == "mmOppositeDirectionManhattan":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'oppositeDirectionlastVisitedManhattanHeuristic'
+                else:
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    
+                
+                if numTraining > 0:
+                    args['numTraining'] = numTraining
+                    if 'numTraining' not in agentOpts: agentOpts['numTraining'] = numTraining
+                print(pacmanType)
+                pacman = pacmanType(**agentOpts, endpos = (randomfinishs[count][0], randomfinishs[count][1]))
+                games = []
+                
+                for i in range( numGames ):
+                    beQuiet = i < numTraining
+                    if beQuiet:
+                            # Suppress output and graphics
+                        import textDisplay
+                        gameDisplay = textDisplay.NullGraphics()
+                        rules.quiet = True
+                    else:
+                        gameDisplay = display
+                        rules.quiet = False
+                    
+                    game = rules.newGame( lay, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
+                    game.run()
+                    if not beQuiet: games.append(game)
+
+                    if record:
+                        import time, pickle
+                        fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
+                        f = open(fname, 'wb')
+                        components = {'layout': layout, 'actions': game.moveHistory}
+                        pickle.dump(components, f)
+                        f.close()
+                
+
+                # save stats for each layout and algo to a csv
+                score = [game.state.getScore() for game in games][0]
+                win = [game.state.isWin() for game in games][0]
+                expanded = pacman._expanded
+                results_map[p].append(pacman._expanded)
+                layoutname = lay
+                algo = p
+                df = df.append({'layout': count, 'algo': algo, 'score': score, 'win': win, 'expanded': expanded}, ignore_index=True)
+                if (numGames-numTraining) > 0:
+                    scores = [game.state.getScore() for game in games]
+                    wins = [game.state.isWin() for game in games]
+                    winRate = wins.count(True)/ float(len(wins))
+                    print('Average Score:', sum(scores) / float(len(scores)))
+                    print('Scores:       ', ', '.join([str(score) for score in scores]))
+                    print('Win Rate:      %d/%d (%.2f)' % (wins.count(True), len(wins), winRate))
+                    print('Record:       ', ', '.join([ ['Loss', 'Win'][int(w)] for w in wins]))
+                
+            count +=1    
+        df.to_csv(f'{csv}.csv', mode='w', header=True)
+        df_test = pd.DataFrame(columns = ['algo_1', 'algo_1_expanded', 'algo_2', 'algo_2_expanded', 'F_score', 'p_value'])
+
+        for i in range(len(pacmanstr) - 1):
+            for j in range(i + 1, len(pacmanstr)):
+                algo_1 = pacmanstr[i]
+                algo_2 = pacmanstr[j]
+                algo_1_expanded = results_map[algo_1]
+                algo_2_expanded = results_map[algo_2]
+                F_score, p_value = anova_test.conduct_test(algo_1_expanded, algo_2_expanded)
+                df_test = df_test.append({'algo_1': algo_1, 'algo_1_expanded': algo_1_expanded, 'algo_2': algo_2, 'algo_2_expanded': algo_2_expanded, 'F_score': F_score, 'p_value': p_value}, ignore_index=True)
+
+        df_test.to_csv(f'ANOVA_results.csv', mode='w', header=True)
+
+    
     return games
+
+
 
 if __name__ == '__main__':
     """

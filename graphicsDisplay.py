@@ -173,7 +173,7 @@ class PacmanGraphics:
         self.distributionImages = None  # Initialized lazily
         self.drawStaticObjects(state)
         self.drawAgentObjects(state)
-
+        
         # Information
         self.previousState = state
 

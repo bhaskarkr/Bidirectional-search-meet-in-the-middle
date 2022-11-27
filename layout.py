@@ -129,20 +129,37 @@ class Layout:
         elif layoutChar in  ['1', '2', '3', '4']:
             self.agentPositions.append( (int(layoutChar), (x,y)))
             self.numGhosts += 1
-def getLayout(name, back = 2):
-    if name.endswith('.lay'):
-        layout = tryToLoad('layouts/' + name)
-        if layout == None: layout = tryToLoad(name)
-    else:
-        layout = tryToLoad('layouts/' + name + '.lay')
-        if layout == None: layout = tryToLoad(name + '.lay')
-    if layout == None and back >= 0:
-        curdir = os.path.abspath('.')
-        os.chdir('..')
-        layout = getLayout(name, back -1)
-        os.chdir(curdir)
-    return layout
-
+def getLayout(name, back = 2, randomtest = 0):
+    if randomtest == 0:
+        if name.endswith('.lay'):
+            layout = tryToLoad('layouts/' + name)
+            if layout == None: layout = tryToLoad(name)
+        else:
+            layout = tryToLoad('layouts/' + name + '.lay')
+            if layout == None: layout = tryToLoad(name + '.lay')
+        if layout == None and back >= 0:
+            curdir = os.path.abspath('.')
+            os.chdir('..')
+            layout = getLayout(name, back -1)
+            os.chdir(curdir)
+        return layout
+    elif randomtest == 1:
+        import os, re
+        files = []
+        finishlocs = []
+        for f in os.listdir('layouts/random'):
+            if re.match('random', f):
+                # files in format random_0_finish(16,6).lay
+                # 16,6 is the size of the maze
+                # extract the size
+                m = re.search('\((\d+),(\d+)\)', f)
+                # GET MATCH
+                
+                width = int(m.group(1))
+                height = int(m.group(2))
+                files.append(getLayout('random/' + f))
+                finishlocs.append((width, height))
+        return files, finishlocs
 def tryToLoad(fullname):
     if(not os.path.exists(fullname)): return None
     f = open(fullname)
