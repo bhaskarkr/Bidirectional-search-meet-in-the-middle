@@ -519,6 +519,12 @@ def oppositeDirectionlastVisitedEuclideanHeuristic(direction, position, terminal
         return euclideanDistance(position, lastVisitedNode)
 
 
+'''
+    Manhattan Heuristic with Start and Goal (MHSG)
+    In this heuristic, we compute the manhattan distance between the current node and the opposite direction’s 
+    terminal node i.e if current node was expanded during the forward direction search, the terminal node will be 
+    the goal node and vice versa.
+'''
 def terminalNodeManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
         return util.manhattanDistance(position, terminalNode)
@@ -526,7 +532,12 @@ def terminalNodeManhattanHeuristic(direction, position, terminalNode, lastVisite
         return util.manhattanDistance(position, terminalNode)
 
 
-
+'''
+    Manhattan Heuristic with Last Node Visited (MHLNV)
+    In this heuristic, we compute the manhattan distance between the current node and the opposite direction’s 
+    last expanded node i.e if current node was expanded during the forward direction search, the destination node will be 
+    the last visited node in the backward direction and vice versa.
+'''
 def oppositeDirectionlastVisitedManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
         return util.manhattanDistance(position, lastVisitedNode)

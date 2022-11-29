@@ -196,6 +196,13 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     return action_list
 
+'''
+    ----------------------------------------------------------------------------------------
+    Added the below functions to implement the working code of Meet in the Middle algorithm 
+    as part of CSE 571 Fall 2022 team project.
+    ----------------------------------------------------------------------------------------
+'''
+
 # For separating the traversal from start to goal and vice versa
 FORWARD = "FORWARD"
 BACKWARD = "BACKWARD"
@@ -395,7 +402,10 @@ def meetInMiddle(problem, heuristic):
                 cG = float("inf") # Set g value of the successor as infinite initially
 
                 if c in forwardNodeMetaData:
+                    # To get the g value of the successor node
                     cG = forwardNodeMetaData[c][G_VALUE]
+
+                # To get the heuristic value of the successor node
                 cH = getHValue(FORWARD, c, goalNode, lastNodeB, heuristic)
 
                 # Calculating the new G value using the g value of prMinFNode and adding the cost to reach child 'c'
