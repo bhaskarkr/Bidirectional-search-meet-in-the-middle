@@ -207,21 +207,26 @@ def meetInMiddle(problem, heuristic):
     if not heuristic or heuristic == nullHeuristic:
         heuristic = mmNullHeuristic
 
+    # Actions represented as directions
     NORTH = 'North'
     SOUTH = 'South'
     EAST = 'East'
     WEST = 'West'
 
     DIRECTION = {NORTH: SOUTH, EAST: WEST, SOUTH: NORTH, WEST: EAST}
+
+    # Function to get the g value by getting the cost of sequence of actions
     def getGValue(actions):
         return problem.getCostOfActions(actions)
 
+    # Function to get the h value by invoking the heuristic calculation function
     def getHValue(direction, state, goal, lastVisitedNode, heuristic):
         return heuristic(direction, state, goal, lastVisitedNode)
 
     def toggleDirectionForActions(actions):
         return [DIRECTION[x] for x in actions][::-1]
 
+    # To store the middle node location where the both expansion from opposite directions meet.
     MIDDLE_NODE = ()
 
     """
@@ -235,12 +240,15 @@ def meetInMiddle(problem, heuristic):
     """
     U = float("inf")
 
+    # Creating the priority queue for storing the priorities based on prF (n) = max(fF (n), 2gF (n)).
     openForwardQueue = util.PriorityQueue() # open set dict{}
     openBackwardQueue = util.PriorityQueue() # open set dict{}
 
     openForward = {}
     openBackward = {}
-    closedForward = {} # closed set{}
+    # Closed set{} for forward traversal direction
+    closedForward = {}
+    # Closed set{} for backward traversal direction
     closedBackward = {} # closed set{}
 
     startNode = problem.getStartState()
@@ -274,9 +282,11 @@ def meetInMiddle(problem, heuristic):
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
                                       ACTION: INITIAL_ACTIONS}
+    # Adding goalNode to Backward open set
     openBackwardQueue.push(goalNode, 0)
 
-    epsilon = 1 #TODO how do we get smallest cost edge of the problem? For now lets say 1 is the smallest edge cost
+    # Since all the edge costs in the Pacman domain are 1, epsilon is set as 1 by default.
+    epsilon = 1
 
     """
         while (OpenF ̸= ∅) and (OpenB ̸= ∅) do
