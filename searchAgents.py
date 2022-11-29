@@ -480,12 +480,25 @@ def mazeDistance(point1, point2, gameState):
     return len(search.bfs(prob))
 
 
+'''
+    --------------------------------------------------------------------
+    Added the below heuristic functions for Meet in the Middle algorithm 
+    as part of CSE 571 Fall 2022 team project.
+    --------------------------------------------------------------------
+'''
+
 FORWARD = "FORWARD"
 BACKWARD = "BACKWARD"
 
 def euclideanDistance(xy1, xy2):
     return ((xy1[0] - xy2[0])**2 + (xy1[1] - xy2[1])**2)**0.5
 
+'''
+    Euclidean Heuristic with Start and Goal (EHSG)
+    In this heuristic, we compute the euclidean distance between the current node and the opposite direction’s 
+    terminal node i.e if current node was expanded during the forward direction search, the terminal node will be
+    the goal node and vice versa.
+'''
 def terminalNodeEuclideanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
         return euclideanDistance(position, terminalNode)
@@ -493,17 +506,25 @@ def terminalNodeEuclideanHeuristic(direction, position, terminalNode, lastVisite
         return euclideanDistance(position, terminalNode)
 
 
+'''
+    Euclidean Heuristic with Last Node Visited (EHLNV)
+    In this heuristic, we compute the euclidean distance between the current node and the opposite direction’s 
+    last expanded node i.e if current node was expanded during the forward direction search, the destination node will be 
+    the last visited node in the backward direction and vice versa.
+'''
 def oppositeDirectionlastVisitedEuclideanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
         return euclideanDistance(position, lastVisitedNode)
     else:
         return euclideanDistance(position, lastVisitedNode)
 
+
 def terminalNodeManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):
     if direction == FORWARD:
         return util.manhattanDistance(position, terminalNode)
     else:
         return util.manhattanDistance(position, terminalNode)
+
 
 
 def oppositeDirectionlastVisitedManhattanHeuristic(direction, position, terminalNode, lastVisitedNode):

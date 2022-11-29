@@ -196,14 +196,18 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     return action_list
 
+# For separating the traversal from start to goal and vice versa
 FORWARD = "FORWARD"
 BACKWARD = "BACKWARD"
 
+
+# Custom null heuristic for Meet in the Middle
 def mmNullHeuristic(direction, state1, state2, state3):
     return 0
 
 def meetInMiddle(problem, heuristic):
 
+    # if no heuristic is passed them we will use mmNullHeuristic as default heuristic
     if not heuristic or heuristic == nullHeuristic:
         heuristic = mmNullHeuristic
 
@@ -213,6 +217,7 @@ def meetInMiddle(problem, heuristic):
     EAST = 'East'
     WEST = 'West'
 
+    # Complement direction to convert backward action sequence to forward action sequence
     DIRECTION = {NORTH: SOUTH, EAST: WEST, SOUTH: NORTH, WEST: EAST}
 
     # Function to get the g value by getting the cost of sequence of actions
@@ -223,6 +228,7 @@ def meetInMiddle(problem, heuristic):
     def getHValue(direction, state, goal, lastVisitedNode, heuristic):
         return heuristic(direction, state, goal, lastVisitedNode)
 
+    # Complement action sequence and reverse the order of resulting sequence
     def toggleDirectionForActions(actions):
         return [DIRECTION[x] for x in actions][::-1]
 
@@ -254,30 +260,42 @@ def meetInMiddle(problem, heuristic):
     startNode = problem.getStartState()
     goalNode = problem.getGoalState()
 
+    # For forward direction, last node visited in the opposite direction and vice versa
     lastNodeF = startNode
     lastNodeB = goalNode
 
+    # List to store the actions taken to reach the particular node
+    # initially no action has been taken
     INITIAL_ACTIONS = []
 
+    # Contants for better readability
     G_VALUE = "G_VALUE"
     H_VALUE = "H_VALUE"
     PRIORITY_VALUE = "PRIORITY_VALUE"
     ACTION = "ACTION"
 
+    # List to store the sequence of actions taken to meet in the middle,
+    # After merging both the direction's actions by taking the forward direction actions as they are
+    # and taking the backward direction actions by complementing and reversing them.
     FINAL_ACTION = []
 
+    # Dictionary to store MetaData for each Node i.e G_VALUE, H_VALUE, PRIORITY_VALUE, ACTION
     forwardNodeMetaData = {}
     backwardNodeMetaData = {}
 
-    closedForward[startNode] = False # initially no action has been taken
-    closedBackward[goalNode] = False # initially no action has been taken
+    # Initializing startNode and goalNode as false, i.e not yet visited
+    closedForward[startNode] = False
+    closedBackward[goalNode] = False
 
+    # Initializing Forward metaData for startNode
     forwardNodeMetaData[startNode] = {H_VALUE: getHValue(FORWARD, startNode, goalNode, lastNodeB, heuristic),
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
                                       ACTION: INITIAL_ACTIONS}
+    # Add startNode to Forward open set
     openForwardQueue.push(startNode, 0)
 
+    # Initializing metaData for goalNode
     backwardNodeMetaData[goalNode] = {H_VALUE: getHValue(BACKWARD, goalNode, startNode, lastNodeF, heuristic),
                                       G_VALUE: getGValue(INITIAL_ACTIONS),
                                       PRIORITY_VALUE: 0,
@@ -292,13 +310,20 @@ def meetInMiddle(problem, heuristic):
         while (OpenF ̸= ∅) and (OpenB ̸= ∅) do
     """
     while not openForwardQueue.isEmpty() and not openBackwardQueue.isEmpty():
-        # Pop both forward and backward. We'll add it back below.
+        # Pop both forward and backward. We'll add it back below whichever is not considered.
         prMinFNode = openForwardQueue.pop()
         prMinBNode = openBackwardQueue.pop()
+
+        # The node with minimum priority is added to the closed set
         closedForward[prMinFNode] = True
         closedBackward[prMinBNode] = True
+
+        # The node with minimum priority is removed from the open set
         openForward[prMinFNode] = False
         openBackward[prMinBNode] = False
+
+        # setting values for respective variables based on respective direction metadata,
+        # for better readability
         forwardG = forwardNodeMetaData[prMinFNode][G_VALUE]
         backwardG = backwardNodeMetaData[prMinBNode][G_VALUE]
         forwardH = forwardNodeMetaData[prMinFNode][H_VALUE]
@@ -307,6 +332,7 @@ def meetInMiddle(problem, heuristic):
         priorityB = backwardNodeMetaData[prMinBNode][PRIORITY_VALUE]
         actionF = forwardNodeMetaData[prMinFNode][ACTION]
         actionB = backwardNodeMetaData[prMinBNode][ACTION]
+
         """
             prF (n) = max(fF (n), 2gF (n)).
         """
@@ -316,7 +342,6 @@ def meetInMiddle(problem, heuristic):
             C := min(prminF , prminB)
         """
         C = min(prMinF, prMinB)
-        # print(prMinFNode, prMinBNode)
 
         """
             if U ≤max(C,fminF,fminB,gminF +gminB +ε)
@@ -324,8 +349,11 @@ def meetInMiddle(problem, heuristic):
                 return U
         """
         if U <= max(C, forwardG + forwardH, backwardG + backwardH, forwardG + backwardG + epsilon):
-            problem.isGoalState(goalNode) # to plot heat map, just calling it with goal node to satisfy the condition
-            # print(MIDDLE_NODE)
+            # To plot heat map, just calling it with goal node to satisfy the condition
+            problem.isGoalState(goalNode)
+
+            # If above condition has been satisfied, then the traversals have meet in the middle
+            # The following information has been displayed for tracking purposes.
             print("The middle node is: ", MIDDLE_NODE[0])
             print("The cost to expand from the start node till the middle: ", MIDDLE_NODE[1])
             print("The cost to expand from the goal node till the middle: ", MIDDLE_NODE[2])
@@ -341,43 +369,56 @@ def meetInMiddle(problem, heuristic):
                 and gF (n) is minimum
                 move n from OpenF to ClosedF
             """
+            # Updating the last node visited in the forward direction for Last Node Visited Heuristic
             lastNodeF = prMinFNode
+
+            # Remove the prMinFNode from forward open set
             openForward[prMinFNode] = False
+
+            # Reverting back the closed set and open set for the popped Node from Backward Priority Queue
             openBackward[prMinBNode] = True
             closedForward[prMinFNode] = True
+
             # Put the backward node back since we went with the forward node
             openBackwardQueue.push(prMinBNode, priorityB)
 
             """
                 for each child c of n do
-                if c ∈ OpenF ∪ ClosedF and gF (c) ≤ gF (n) + cost(n, c) then
-                    continue
-                if c ∈ OpenF ∪ ClosedF then 
-                    remove c from OpenF ∪ ClosedF
-                gF (c) := gF (n) + cost(n, c)
-                add c to OpenF
-                if c ∈ OpenB then
-                    U :=min(U,gF(c)+gB(c))
             """
 
+            # iterate the Successors
             for successor in problem.getSuccessors(prMinFNode):
-                c = successor[0]
-                action = successor[1]
-                cost = successor[2]
-                newActionList = list(actionF) + [action]
-                cG = float("inf")
+                c = successor[0] # child node location coordinate
+                action = successor[1]  # Action needed to reach child
+                cost = successor[2] # Cost associated with the action
+                newActionList = list(actionF) + [action] # Append action needed to reach child 'c' to the current node i.e prMinFNode action sequence
+                cG = float("inf") # Set g value of the successor as infinite initially
 
                 if c in forwardNodeMetaData:
                     cG = forwardNodeMetaData[c][G_VALUE]
                 cH = getHValue(FORWARD, c, goalNode, lastNodeB, heuristic)
 
+                # Calculating the new G value using the g value of prMinFNode and adding the cost to reach child 'c'
+                '''
+                    gF (c) := gF (n) + cost(n, c)
+                '''
                 cGNew = forwardG + cost
 
+                '''
+                    if c ∈ OpenF ∪ ClosedF and gF (c) ≤ gF (n) + cost(n, c) then
+                        continue
+                    if c ∈ OpenF ∪ ClosedF then 
+                        remove c from OpenF ∪ ClosedF
+                '''
                 if ((c in openForward and openForward[c]) or (c in closedForward and closedForward[c])) and cG <= cGNew:
                     continue
 
                 if (c in openForward and openForward[c]) or (c in closedForward and closedForward[c]):
                     closedForward[c] = False
+
+                '''
+                    add c to OpenF
+                '''
 
                 openForward[c] = True
                 cF = cH + cGNew
@@ -389,7 +430,6 @@ def meetInMiddle(problem, heuristic):
                     if c ∈ OpenB then
                         U :=min(U,gF(c)+gB(c))
                 """
-
                 if c in openBackward and openBackward[c]:
                     U = min(U, cGNew + backwardNodeMetaData[c][G_VALUE])
                     MIDDLE_NODE = (c, cGNew, backwardNodeMetaData[c][G_VALUE])
