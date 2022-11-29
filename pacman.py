@@ -768,6 +768,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                 
             count +=1    
         df.to_csv(f'{csv}.csv', mode='w', header=True)
+        # Conduct ANOVA testing and write results to ANOVA_results.csv
         df_test = pd.DataFrame(columns = ['algo_1', 'algo_1_expanded', 'algo_2', 'algo_2_expanded', 'F_score', 'p_value'])
 
         for i in range(len(pacmanstr) - 1):
