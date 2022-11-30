@@ -1,6 +1,6 @@
 from scipy.stats import f_oneway
 
-class ANOVATest:
+class TTest:
     def __init__(self, alpha=0.05):
         self.alpha = alpha
 

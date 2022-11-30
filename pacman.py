@@ -11,7 +11,7 @@
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 import pandas as pd
-from ANOVA import ANOVATest
+from statistics import TTest
 
 
 """
@@ -680,7 +680,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
         df = pd.DataFrame(columns = ['layout', 'algo', 'score', 'win', 'expanded'])
         count = 0
         results_map = {}
-        anova_test = ANOVATest()
+        t_test = TTest()
 
         for pacman in pacmanstr:
             results_map[pacman] = []
@@ -721,7 +721,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                 if numTraining > 0:
                     args['numTraining'] = numTraining
                     if 'numTraining' not in agentOpts: agentOpts['numTraining'] = numTraining
-                print(pacmanType)
+
                 pacman = pacmanType(**agentOpts, endpos = (randomfinishs[count][0], randomfinishs[count][1]))
                 games = []
                 
@@ -768,7 +768,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                 
             count +=1    
         df.to_csv(f'{csv}.csv', mode='w', header=True)
-        # Conduct ANOVA testing and write results to ANOVA_results.csv
+        # Conduct T-testing and write results to TTest_results.csv
         df_test = pd.DataFrame(columns = ['algo_1', 'algo_1_expanded', 'algo_2', 'algo_2_expanded', 'F_score', 'p_value'])
 
         for i in range(len(pacmanstr) - 1):
@@ -777,10 +777,10 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                 algo_2 = pacmanstr[j]
                 algo_1_expanded = results_map[algo_1]
                 algo_2_expanded = results_map[algo_2]
-                F_score, p_value = anova_test.conduct_test(algo_1_expanded, algo_2_expanded)
+                F_score, p_value = t_test.conduct_test(algo_1_expanded, algo_2_expanded)
                 df_test = df_test.append({'algo_1': algo_1, 'algo_1_expanded': algo_1_expanded, 'algo_2': algo_2, 'algo_2_expanded': algo_2_expanded, 'F_score': F_score, 'p_value': p_value}, ignore_index=True)
 
-        df_test.to_csv(f'ANOVA_results.csv', mode='w', header=True)
+        df_test.to_csv(f'TTest_results.csv', mode='w', header=True)
 
     
     return games
