@@ -22,8 +22,10 @@ To generate random layouts without walls: <br>
 `python createRandom.py -width 15 -height 15 -n 1 -e` <br>
 This generates the layouts in the `layouts/random` directory. <br>
 
-
-
+Examples used to generate results layout folders:
+open layouts - `python createRandom.py -width 15 -height 15 -n 50 -e` <br>
+maze layouts - `python createRandom.py -width 15 -height 15 -n 50` <br>
+linear layouts - `python createRandom.py -width 2 -height 15 -n 50` <br>
 
 
 ## To run MM on a single layout
@@ -35,9 +37,14 @@ The options for heuristics are: <br>
 * heuristic= terminalNodeEuclideanHeuristic 
 * heuristic= oppositeDirectionlastVisitedManhattanHeuristic 
 
+
 ## To run MM on a randomly generated layout with a custom goal state
 `python pacman.py -l random_0_finish(20,2) -p SearchAgent -a fn=mm,heuristic=terminalNodeManhattanHeuristic --x 20 --y 2` <br>
 Here x and y are the coordinates of the goal state, which must be the same as specified in the layout file name, for example for random_0_finish(x,y): x and y are the coordinates. It should also be noted that the random layout must be in the `/layouts` directory as opposed to the `/layouts/random` directory. <br>
 
+
+## To generate the two heatmap examples comparing BFS expansion to MM expansion
+`python pacman.py -l openMaze -p SearchAgent -a fn=bfs` <br>
+`python pacman.py -l openMaze -p SearchAgent -a fn=mm` <br>
 
 
