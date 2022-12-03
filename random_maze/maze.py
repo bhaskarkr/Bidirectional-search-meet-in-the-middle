@@ -5,7 +5,7 @@ import random
 
 # Easy to read representation for each cardinal direction.
 N, S, W, E = ('n', 's', 'w', 'e')
-
+random.seed("sundevi")
 class Cell(object):
     """
     Class for each individual cell. Knows only its position and which walls are
