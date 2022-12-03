@@ -679,7 +679,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
         return games
     elif randomtest == 1:
         
-        pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mmEuclidean", "mmManhattan","mmOppositeDirectionManhattan"]
+        pacmanstr = ["bfs", "dfs", "astar", "ucs", "mm0", "mmEuclidean", "mmManhattan", "mmOppositeDirectionManhattan", "mmOppositeDirectionEuclidean"]
         pacmans = []
         df = pd.DataFrame(columns = ['layout', 'algo', 'score', 'win', 'expanded'])
         count = 0
@@ -718,6 +718,12 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
                     pacman = "mm"
                     agentOpts = parseAgentArgs(f"fn={pacman}")
                     agentOpts['heuristic'] = 'oppositeDirectionlastVisitedManhattanHeuristic'
+
+                elif pacman == "mmOppositeDirectionEuclidean":
+                    pacman = "mm"
+                    agentOpts = parseAgentArgs(f"fn={pacman}")
+                    agentOpts['heuristic'] = 'oppositeDirectionlastVisitedEuclideanHeuristic'
+
                 else:
                     agentOpts = parseAgentArgs(f"fn={pacman}")
                     
@@ -773,16 +779,16 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
             count +=1    
         df.to_csv(f'{csv}.csv', mode='w', header=True)
         # Conduct T-testing and write results to TTest_results.csv
-        df_test = pd.DataFrame(columns = ['algo_1', 'algo_1_expanded', 'algo_2', 'algo_2_expanded', 'F_score', 'p_value'])
+        df_test = pd.DataFrame(columns = ['algo_1', 'algo_1_avg_expanded', 'algo_2', 'algo_2_avg_expanded', 'F_score', 'p_value'])
 
         for i in range(len(pacmanstr) - 1):
             for j in range(i + 1, len(pacmanstr)):
                 algo_1 = pacmanstr[i]
                 algo_2 = pacmanstr[j]
-                algo_1_expanded = results_map[algo_1]
-                algo_2_expanded = results_map[algo_2]
-                F_score, p_value = t_test.conduct_test(algo_1_expanded, algo_2_expanded)
-                df_test = df_test.append({'algo_1': algo_1, 'algo_1_expanded': algo_1_expanded, 'algo_2': algo_2, 'algo_2_expanded': algo_2_expanded, 'F_score': F_score, 'p_value': p_value}, ignore_index=True)
+                F_score, p_value = t_test.conduct_test(results_map[algo_1], results_map[algo_2])
+                algo_1_expanded = sum(results_map[algo_1]) / len(results_map[algo_1])
+                algo_2_expanded = sum(results_map[algo_2]) / len(results_map[algo_2])
+                df_test = df_test.append({'algo_1': algo_1, 'algo_1_avg_expanded': algo_1_expanded, 'algo_2': algo_2, 'algo_2_avg_expanded': algo_2_expanded, 'F_score': F_score, 'p_value': p_value}, ignore_index=True)
 
         df_test.to_csv(f'TTest_results.csv', mode='w', header=True)
 
