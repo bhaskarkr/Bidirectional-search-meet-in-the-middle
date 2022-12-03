@@ -22,7 +22,7 @@ To generate random layouts without walls: <br>
 `python createRandom.py -width 15 -height 15 -n 1 -e` <br>
 This generates the layouts in the `layouts/random` directory. <br>
 
-Examples used to generate results layout folders:
+Examples used to generate results layout folders:<br>
 open layouts - `python createRandom.py -width 15 -height 15 -n 50 -e` <br>
 maze layouts - `python createRandom.py -width 15 -height 15 -n 50` <br>
 linear layouts - `python createRandom.py -width 2 -height 15 -n 50` <br>
