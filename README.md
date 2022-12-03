@@ -5,12 +5,8 @@ This Project is written in Python 3.7 and has dependencies on the following libr
 * [scipy](https://www.scipy.org/)
 * [Pandas](https://pandas.pydata.org/)
 
-
-## To Reproduce Results 
-`python pacman.py -p SearchAgent --randomtest 1 --frameTime 0 --quietTextGraphics` <br>
-
-This will run every algorithm for every layout in `layouts/random`. Different sets of randomized layouts are provided in `layouts/randomLinear`, `layout/randomMaze`, and `layout/randomOpen`. These sets can be copied into layouts/random for testing. Additionally, a one way T-test is conducted between every algorithm pair on the nodes expanded. The results will be generated in the `TTest_results.csv` file, while the nodes expanded for each run will be saved to `stats.csv` file, in the root folder. **Important Note:** Make sure you copy files from `layouts/randomLinear`, `layout/randomMaze`, or `layout/randomOpen` into `layouts/random` each time you run. **Make sure you delete the previous mazes in `layouts/random`**<br> 
-
+To install dependencies run the following command: <br>
+`pip install -r requirements.txt` <br>
 
 ## To generate random layouts
 To generate random layouts: <br>
@@ -22,10 +18,33 @@ To generate random layouts without walls: <br>
 `python createRandom.py -width 15 -height 15 -n 1 -e` <br>
 This generates the layouts in the `layouts/random` directory. <br>
 
-Examples used to generate results layout folders:
+Examples used to generate results layout folders:<br>
 open layouts - `python createRandom.py -width 15 -height 15 -n 50 -e` <br>
 maze layouts - `python createRandom.py -width 15 -height 15 -n 50` <br>
 linear layouts - `python createRandom.py -width 2 -height 15 -n 50` <br>
+
+
+## To Reproduce Results 
+**Important Note:** Layout folders with generated layours are provided for results reproducibility. Make sure you copy files from `layouts/randomLinear`, `layout/randomMaze`, or `layout/randomOpen` into `layouts/random` each time you run. **Make sure you delete the previous mazes in `layouts/random` and that the folder `layouts/random` exists**<br>
+
+To Reproduce Maze-like layout results: <br>
+delete layouts in `layouts/random` <br>
+copy layouts from `layout/randomMaze` to `layouts/random` <br>
+then run the following command `python pacman.py -p SearchAgent --randomtest 1 --frameTime 0 --quietTextGraphics` <br>
+
+To Reproduce Linear layout results: <br>
+delete layouts in `layouts/random` <br>
+copy layouts from `layout/randomLinear` to `layouts/random` <br>
+then run the following command `python pacman.py -p SearchAgent --randomtest 1 --frameTime 0 --quietTextGraphics` <br>
+
+To Reproduce Open layout results: <br>
+delete layouts in `layouts/random` <br>
+copy layouts from `layout/randomOpen` to `layouts/random` <br>
+then run the following command `python pacman.py -p SearchAgent --randomtest 1 --frameTime 0 --quietTextGraphics` <br>
+
+The python command will run every algorithm for every layout in `layouts/random`. Different sets of randomized layouts are provided in `layouts/randomLinear`, `layout/randomMaze`, and `layout/randomOpen`. These sets can be copied into layouts/random for testing. Additionally, a one way T-test is conducted between every algorithm pair on the nodes expanded. The results will be generated in the `TTest_results.csv` file, while the nodes expanded for each run will be saved to `stats.csv` file, in the root folder. <br> 
+
+The .csv files with our results are provided as reference in `TTest_maze_results.csv`, `TTest_linear_results.csv`, and `TTest_open_results.csv`
 
 
 ## To run MM on a single layout
