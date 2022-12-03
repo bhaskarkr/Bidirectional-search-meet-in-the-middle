@@ -1,10 +1,16 @@
 To generate random layouts:
 python createRandom.py -width 15 -height 15 -n 1 -e
 
+arguments:
 width - width of the maze
 heigth - height of the maze
 n - number of mazes to generate
 e - whether to make the maze open/empty. omit the flag to generate walled mazes
+
+examples:
+open layouts - python createRandom.py -width 15 -height 15 -n 50 -e
+maze layouts - python createRandom.py -width 15 -height 15 -n 50
+lienar layouts - python createRandom.py -width 2 -height 15 -n 50
 
 To run analysis:
 python pacman.py -p SearchAgent --randomtest 1 --frameTime 0 --quietTextGraphics
