@@ -42,7 +42,9 @@ delete layouts in `layouts/random` <br>
 copy layouts from `layout/randomOpen` to `layouts/random` <br>
 then run the following command `python pacman.py -p SearchAgent --randomtest 1 --frameTime 0 --quietTextGraphics` <br>
 
-The python command will run every algorithm for every layout in `layouts/random`. Different sets of randomized layouts are provided in `layouts/randomLinear`, `layout/randomMaze`, and `layout/randomOpen`. These sets can be copied into `layouts/random` for testing. Additionally, a one way T-test is conducted between every algorithm pair on the nodes expanded. The results will be generated in the `TTest_results.csv` file, while the nodes expanded for each run will be saved to `stats.csv` file, in the root folder. <br> 
+The python command will run every algorithm for every layout in `layouts/random`. Different sets of randomized layouts are provided in `layouts/randomLinear`, `layout/randomMaze`, and `layout/randomOpen`. These sets can be copied into layouts/random for testing. Additionally, a one way T-test is conducted between every algorithm pair on the nodes expanded. The results will be generated in the `TTest_results.csv` file, while the nodes expanded for each run will be saved to `stats.csv` file, in the root folder. <br> 
+
+The .csv files with our results are provided as reference in `TTest_maze_results.csv`, `TTest_linear_results.csv`, and `TTest_open_results.csv`
 
 
 ## To run MM on a single layout
