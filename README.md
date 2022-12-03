@@ -5,6 +5,9 @@ This Project is written in Python 3.7 and has dependencies on the following libr
 * [scipy](https://www.scipy.org/)
 * [Pandas](https://pandas.pydata.org/)
 
+To install dependencies run the following command: <br>
+`pip install -r requirements.txt` <br>
+
 
 ## To Reproduce Results 
 `python pacman.py -p SearchAgent --randomtest 1 --frameTime 0 --quietTextGraphics` <br>
