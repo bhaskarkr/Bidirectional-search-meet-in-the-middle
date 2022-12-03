@@ -27,7 +27,7 @@ This generates the layouts in the `layouts/random` directory. <br>
 
 
 ## To run MM on a single layout
-`python pacman.py -l bigMaze -p SearchAgent -a fn=mm,heuristic=terminalNodeManhattanHeuristic -z ` 
+`python pacman.py -l bigMaze -p SearchAgent -a fn=mm,heuristic=terminalNodeManhattanHeuristic -z 0.5` 
 The options for heuristics are: <br>
 * heuristic= mmNullHeuristic 
 * heuristic= terminalNodeManhattanHeuristic
