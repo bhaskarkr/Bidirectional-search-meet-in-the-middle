@@ -23,6 +23,8 @@ open layouts - `python createRandom.py -width 15 -height 15 -n 50 -e` <br>
 maze layouts - `python createRandom.py -width 15 -height 15 -n 50` <br>
 linear layouts - `python createRandom.py -width 2 -height 15 -n 50` <br>
 
+**Note:** We are using same seed for the random function, so for a single command it will always same set of layout given the args are same.
+
 
 ## To Reproduce Results 
 **Important Note:** Layout folders with generated layours are provided for results reproducibility. Make sure you copy files from `layouts/randomLinear`, `layout/randomMaze`, or `layout/randomOpen` into `layouts/random` each time you run. **Make sure you delete the previous mazes in `layouts/random` and that the folder `layouts/random` exists**<br>
