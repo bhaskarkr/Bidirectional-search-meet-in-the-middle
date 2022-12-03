@@ -527,6 +527,10 @@ def readCommand( argv ):
                       help=default('Maximum length of time an agent can spend computing in a single game'), default=30)
     parser.add_option('--randomtest', dest='randomtest', type='int',
                       help=default('testing on randomly generated data on layouts/random. 0 for not testing, 1 for a*, BFS, DFS, mm and mm0'), default=0)
+    parser.add_option('--x', dest='x', type='int',
+                      help=default('x of goal'), default=1)
+    parser.add_option('--y', dest='y', type='int',
+                      help=default('y of goal'), default=1)
     # custom csv file name
     parser.add_option('--csv', dest='csv', help=default('csv file name'), default='stats')
     options, otherjunk = parser.parse_args(argv)
@@ -551,7 +555,7 @@ def readCommand( argv ):
     if options.numTraining > 0:
         args['numTraining'] = options.numTraining
         if 'numTraining' not in agentOpts: agentOpts['numTraining'] = options.numTraining
-    pacman = pacmanType(**agentOpts) # Instantiate Pacman with agentArgs
+    pacman = pacmanType(**agentOpts, endpos = (options.x,options.y)) # Instantiate Pacman with agentArgs
     args['pacman'] = pacman
 
     # Don't display training games
